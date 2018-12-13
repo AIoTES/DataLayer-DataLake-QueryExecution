@@ -14,10 +14,12 @@ public class QueryExecution {
 	private int port;
     private Service spark;
     private final Logger logger = LoggerFactory.getLogger(QueryExecution.class);
+    private DataLakeClient client;
     
     
     public QueryExecution(int port) {
         this.port = port;
+        client = new DataLakeClient();
     }
     
     public void start() throws Exception {
@@ -50,17 +52,18 @@ public class QueryExecution {
     			
     				// Parse query
     				Query query = new Query(sql);
-    				
-    				
+    				    				
     				// Execute query   		
-    		
+    				String result = client.execute(query);
     		
     				// Format response
+    				JsonElement dbResponse = parser.parse(result);
+    				responseBody.add("records", dbResponse);
     				
     				    				
     				// Test
-    				JsonElement testResponse = parser.parse(query.toString());
-    				responseBody.add("records", testResponse);
+ //   				JsonElement testResponse = parser.parse(query.toString());   				
+ //   				responseBody.add("records", testResponse);
     				
     			
     			} catch (Exception e) {

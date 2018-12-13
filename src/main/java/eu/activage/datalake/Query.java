@@ -23,7 +23,7 @@ import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectExpressionItem;
 import net.sf.jsqlparser.util.TablesNamesFinder;
 
-public class Query {
+class Query {
 	String index;
 	String[] columns;
 	String [] conditions;
@@ -38,16 +38,16 @@ public class Query {
 			Select select = (Select) stmt;
 		    				
 			// Get table names
-			// Table name = platform
 			index = getTableNames(select).get(0); // Only one table
 			logger.debug("Index: " + index);
 			
 			// Get column names
-			columns = getColumnNames(select); // TODO: add support to expressions
+			columns = getColumnNames(select); // TODO: add support to expressions?
             logger.debug("Column names: " + columns);
 			
 			// Get conditions
-            conditions = getAndConditions(select); // TODO: add more condition operators
+            conditions = getAndConditions(select); // Only simple conditions using AND are supported 
+         // TODO: add more condition operators
             logger.debug("AND conditions: " + conditions);
           				
 		}else{
