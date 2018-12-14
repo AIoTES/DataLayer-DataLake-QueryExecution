@@ -1,14 +1,10 @@
 package eu.activage.datalake;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
-import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.URIBuilder;
@@ -35,7 +31,7 @@ class DataLakeClient {
 		return response;
 	}	
 	
-	String getHistoricData(String platform, String device, String[] params) throws URISyntaxException, ParseException, ClientProtocolException, IOException{
+	String getHistoricData(String platform, String device, String[] params) throws Exception{
 		String response = "";
 		
 		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd"); // Format of the input query date values. TODO: add time?
@@ -69,17 +65,20 @@ class DataLakeClient {
 		}
 		builder.setParameter("from", fromDate);
 		builder.setParameter("to", toDate);
-		
-		
+				
 		HttpGet httpGet = new HttpGet(builder.build());
 		HttpResponse httpResponse = httpClient.execute(httpGet);
-		 
-		// Do something with the response code?
-		HttpEntity responseEntity = httpResponse.getEntity();
-		if(responseEntity!=null) {
-			response = EntityUtils.toString(responseEntity);
-		}
+		int responseCode = httpResponse.getStatusLine().getStatusCode();
 		
+		if(responseCode==200){
+			HttpEntity responseEntity = httpResponse.getEntity();
+			if(responseEntity!=null) {
+				response = EntityUtils.toString(responseEntity);
+			}
+		}else{
+			throw new Exception("Could not retrieve data. Response code from historic data service: " + responseCode);
+		}
+						
 		return response;
 	}
 
