@@ -57,7 +57,7 @@ class Query {
 		
 	}
 	
-   // Query parse methods
+   // Query parsing methods
     
     protected List<String> getTableNames(Select select){
     	TablesNamesFinder tablesNamesFinder = new TablesNamesFinder();

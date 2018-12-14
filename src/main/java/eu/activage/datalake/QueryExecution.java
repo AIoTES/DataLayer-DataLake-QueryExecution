@@ -48,7 +48,7 @@ public class QueryExecution {
     				JsonObject reqBody = (JsonObject) parser.parse(request.body());
     				String sql = reqBody.get("query").getAsString();
     			
-    				logger.info("Query: " + sql);
+    				logger.info("Received query: " + sql);
     			
     				// Parse query
     				Query query = new Query(sql);
@@ -59,15 +59,10 @@ public class QueryExecution {
     				// Format response
     				JsonElement dbResponse = parser.parse(result);
     				responseBody.add("records", dbResponse);
-    				
-    				    				
-    				// Test
- //   				JsonElement testResponse = parser.parse(query.toString());   				
- //   				responseBody.add("records", testResponse);
-    				
     			
     			} catch (Exception e) {
                     response.status(400);
+                    e.printStackTrace();
                     return e.getMessage();
                 }
     		
@@ -85,7 +80,7 @@ public class QueryExecution {
     }
 
     public static void main(String[] args) throws Exception {
-    	int port = 4568;
+    	int port = 4570;
     	if (args.length > 0){
     		port = Integer.parseInt(args[0]);
     	}

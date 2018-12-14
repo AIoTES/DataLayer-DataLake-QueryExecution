@@ -19,7 +19,8 @@ import org.slf4j.LoggerFactory;
 
 class DataLakeClient {
 	
-	String historicUrl = "http://localhost:4569/historic";
+	String historicUrl = "http://localhost:4569/historic"; // TODO: get this value from configuration or as input parameter in main class
+	
 	private final Logger logger = LoggerFactory.getLogger(DataLakeClient.class);
 	
 	String execute(Query q) throws Exception{
@@ -45,6 +46,7 @@ class DataLakeClient {
 		URIBuilder builder = new URIBuilder(historicUrl);
 				
 		// A simple request
+		logger.info("Retrieving historic data from platform: " + platform);
 		builder.setParameter("platform", platform).setParameter("deviceId", device);
 		// Get conditions
 		String fromDate = "2017-01-01"; // Default value
@@ -67,10 +69,7 @@ class DataLakeClient {
 		}
 		builder.setParameter("from", fromDate);
 		builder.setParameter("to", toDate);
-				
-		// Test
-//		System.out.println(builder.build().toString());
-//		response = "{ \"query\": \"" + builder.build().toString() + "\" }";
+		
 		
 		HttpGet httpGet = new HttpGet(builder.build());
 		HttpResponse httpResponse = httpClient.execute(httpGet);
