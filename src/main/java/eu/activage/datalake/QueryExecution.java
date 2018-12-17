@@ -1,8 +1,12 @@
 package eu.activage.datalake;
 
+import java.net.URL;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Charsets;
+import com.google.common.io.Resources;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -33,9 +37,15 @@ public class QueryExecution {
     			
     			logger.info("Get Schema");
     			
+    			// Get test data from a file
+    			URL test = Resources.getResource("test-schema.json");
+    		    String schema = Resources.toString(test, Charsets.UTF_8);
+    		    
+  //  		    String schema = "{ \"schema\": {} }";
+    			
     			response.header("Content-Type", "application/json;charset=UTF-8");
     			response.status(200);
-    			return "{ \"schema\": {} }";
+    			return schema;
     		});
     	
     	
