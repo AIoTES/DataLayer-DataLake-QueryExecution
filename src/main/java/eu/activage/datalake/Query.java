@@ -92,6 +92,8 @@ class Query {
     	return columns;
     }
     
+    // TODO: Add support to other possible types of conditions (OR, brackets, etc)
+    
     protected String[] getAndConditions(Select select){
     	// Get conditions with AND
     	List<String> conditions = new ArrayList<String>();

@@ -18,20 +18,26 @@ import com.google.gson.JsonParser;
 
 class DataLakeClient {
 	
-	String historicUrl = "http://localhost:4569/historic"; // TODO: get this value from configuration or as input parameter in main class
+	String historicUrl;
+	// TODO: integrate with independent data storage and indexing service
 	
 	private final Logger logger = LoggerFactory.getLogger(DataLakeClient.class);
+	
+	DataLakeClient(String url){
+		historicUrl = url;
+	}
 	
 	String execute(Query q) throws Exception{
 		String response = null;
 		
-		// TODO: analyze query and identify data sources (by the index)
+		// TODO: analyze query and identify data sources (by the index) Table = index
 		// In the current version, indices represent platforms (for the historic data module) and columns represent devices (or magnitudes?)
 		
 		// A simple call to the historic data service
 //		response = getHistoricData(q.index, q.columns[0], q.conditions);
 		
 		// Generate queries for each column and compose response (for real historic data)
+		// TODO: integrate independent data storage
 		JsonArray res = new JsonArray();
 		JsonParser parser = new JsonParser();
 		for (int i = 0; i < q.columns.length; i++){

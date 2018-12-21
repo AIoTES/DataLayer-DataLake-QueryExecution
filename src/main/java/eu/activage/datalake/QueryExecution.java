@@ -20,10 +20,9 @@ public class QueryExecution {
     private final Logger logger = LoggerFactory.getLogger(QueryExecution.class);
     private DataLakeClient client;
     
-    
-    public QueryExecution(int port) {
+    public QueryExecution(int port, String historicUrl) {
         this.port = port;
-        client = new DataLakeClient();
+        client = new DataLakeClient(historicUrl);
     }
     
     public void start() throws Exception {
@@ -37,11 +36,10 @@ public class QueryExecution {
     			
     			logger.info("Get Schema");
     			
+    			// TODO: call some (future) service to get the requested schema
     			// Get test data from a file
     			URL test = Resources.getResource("test-schema.json");
     		    String schema = Resources.toString(test, Charsets.UTF_8);
-    		    
-  //  		    String schema = "{ \"schema\": {} }";
     			
     			response.header("Content-Type", "application/json;charset=UTF-8");
     			response.status(200);
@@ -91,10 +89,14 @@ public class QueryExecution {
 
     public static void main(String[] args) throws Exception {
     	int port = 4570;
+    	String historicUrl = "http://localhost:4569/historic";
     	if (args.length > 0){
     		port = Integer.parseInt(args[0]);
+    		if (args.length > 1){
+    			historicUrl = args[1];
+    		}
     	}
-    	new QueryExecution(port).start();
+    	new QueryExecution(port, historicUrl).start();
     }
     
     
