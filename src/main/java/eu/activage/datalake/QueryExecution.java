@@ -20,9 +20,9 @@ public class QueryExecution {
     private final Logger logger = LoggerFactory.getLogger(QueryExecution.class);
     private DataLakeClient client;
     
-    public QueryExecution(int port, String historicUrl) {
+    public QueryExecution(int port, String historicUrl, String storageUrl) {
         this.port = port;
-        client = new DataLakeClient(historicUrl);
+        client = new DataLakeClient(historicUrl, storageUrl);
     }
     
     public void start() throws Exception {
@@ -90,13 +90,17 @@ public class QueryExecution {
     public static void main(String[] args) throws Exception {
     	int port = 4570;
     	String historicUrl = "http://localhost:4569/historic";
+    	String storageUrl = "http://localhost:4568/"; // TODO: use default URL of the independent data storage
     	if (args.length > 0){
     		port = Integer.parseInt(args[0]);
     		if (args.length > 1){
     			historicUrl = args[1];
+    			if (args.length > 2){
+        			storageUrl = args[2];
+        		}
     		}
     	}
-    	new QueryExecution(port, historicUrl).start();
+    	new QueryExecution(port, historicUrl, storageUrl).start();
     }
     
     

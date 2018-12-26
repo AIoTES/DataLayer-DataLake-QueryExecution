@@ -7,24 +7,30 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.utils.URIBuilder;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
 class DataLakeClient {
 	
 	String historicUrl;
 	// TODO: integrate with independent data storage and indexing service
+	String storageUrl;
 	
 	private final Logger logger = LoggerFactory.getLogger(DataLakeClient.class);
 	
-	DataLakeClient(String url){
-		historicUrl = url;
+	DataLakeClient(String historicData, String independentData){
+		historicUrl = historicData;
+		storageUrl = independentData;
 	}
 	
 	String execute(Query q) throws Exception{
@@ -36,16 +42,23 @@ class DataLakeClient {
 		// A simple call to the historic data service
 //		response = getHistoricData(q.index, q.columns[0], q.conditions);
 		
-		// Generate queries for each column and compose response (for real historic data)
-		// TODO: integrate independent data storage
-		JsonArray res = new JsonArray();
-		JsonParser parser = new JsonParser();
-		for (int i = 0; i < q.columns.length; i++){
-			String data = getHistoricData(q.index, q.columns[i], q.conditions);
-			res.addAll(parser.parse(data).getAsJsonArray());
+		// TODO: integrate indexing service
+		if(q.index.equals("fiware") || q.index.equals("sofia2") || q.index.equals("universaal")){
+			// Generate queries for each column and compose response (for real historic data)
+			JsonArray res = new JsonArray();
+			JsonParser parser = new JsonParser();
+			for (int i = 0; i < q.columns.length; i++){
+				String data = getHistoricData(q.index, q.columns[i], q.conditions);
+				res.addAll(parser.parse(data).getAsJsonArray());
+			}
+			response = res.toString();
+		}else{
+			// TODO: integrate independent data storage
+			// TODO: map sql query to independent data storage call
+			// What are the "database" and "table" values?
+			response = getFromIndependentStorage(q.index, q.index, q.createQueryString()); // DB, table, query
 		}
-		response = res.toString();
-		
+				
 		return response;
 	}	
 	
@@ -97,6 +110,39 @@ class DataLakeClient {
 			throw new Exception("Could not retrieve data. Response code from historic data service: " + responseCode);
 		}
 						
+		return response;
+	}
+	
+	
+	String getFromIndependentStorage(String db, String table, String query) throws Exception{
+		// TODO: test with independent database
+		String response = "";
+				
+		JsonObject body = new JsonObject();
+		body.addProperty("db", db);
+		body.addProperty("table", table);
+		body.addProperty("query", query);
+		
+		// test
+//		response = body.toString();
+		
+		HttpClient httpClient = HttpClientBuilder.create().build();
+		HttpPost httpPost = new HttpPost(storageUrl + "independentStorage/query");
+		
+		 HttpEntity translationEntity = new StringEntity(body.toString(), ContentType.APPLICATION_JSON);
+		 httpPost.setEntity(translationEntity);
+		 HttpResponse httpResponse = httpClient.execute(httpPost);
+		 // Do something with the response code?
+		 int responseCode = httpResponse.getStatusLine().getStatusCode();
+		 logger.info("Response code: " + httpResponse.getStatusLine().getStatusCode());
+		 if(responseCode==200){
+			 HttpEntity responseEntity = httpResponse.getEntity();
+			 if(responseEntity!=null) {
+				 response = EntityUtils.toString(responseEntity);
+			 }
+		 }else{
+				throw new Exception("Could not retrieve data. Response code received from Independent Data Storage: " + responseCode);
+		 }	
 		return response;
 	}
 

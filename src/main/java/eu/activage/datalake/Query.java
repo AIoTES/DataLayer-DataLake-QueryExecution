@@ -9,11 +9,14 @@ import org.slf4j.LoggerFactory;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 
+import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.BinaryExpression;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitorAdapter;
 import net.sf.jsqlparser.expression.Function;
+import net.sf.jsqlparser.expression.Parenthesis;
 import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
+import net.sf.jsqlparser.expression.operators.conditional.OrExpression;
 import net.sf.jsqlparser.expression.operators.relational.ComparisonOperator;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Column;
@@ -24,6 +27,7 @@ import net.sf.jsqlparser.statement.select.SelectExpressionItem;
 import net.sf.jsqlparser.util.TablesNamesFinder;
 
 class Query {
+	private String sql;
 	String index;
 	String[] columns;
 	String [] conditions;
@@ -32,6 +36,7 @@ class Query {
 	Query(String sql) throws Exception{
 		// Parse query
 		Statement stmt = CCJSqlParserUtil.parse(sql);
+		this.sql = sql;
 	    		
 		// Get data
 		if(stmt instanceof Select){
@@ -72,7 +77,7 @@ class Query {
         String[] columns = new String[selectitems.size()];
         for(int i=0;i<selectitems.size();i++){
            Expression expression=((SelectExpressionItem) selectitems.get(i)).getExpression();  
-           logger.debug("Expression:-"+expression);
+           logger.debug("Expression: "+expression);
            if( expression instanceof Column){
                // A column name
         	   Column col=(Column)expression;
@@ -133,6 +138,78 @@ class Query {
     	
     }
     
+    String createQueryString() throws JSQLParserException{
+    	// TODO: check syntax
+    	String q = null;
+    	
+    	Statement statement = CCJSqlParserUtil.parse(sql);
+    	
+    	if(statement instanceof Select){
+    		q = "SELECT ";
+        	for (int i = 0; i < columns.length; i++){
+    			q = q + columns[i];
+    			if(i==columns.length-1) q = q + " ";
+    			else q = q + ", ";
+    		}
+        	
+        	PlainSelect ps = (PlainSelect)((Select)statement).getSelectBody();
+        	
+        	Expression expr = ps.getWhere();
+        	
+        	List<String> conditions = new ArrayList<String>();
+        	
+        	expr.accept(new ExpressionVisitorAdapter() {
+        		int depth = 0;
+                public void processLogicalExpression( BinaryExpression expr, String logic){
+                	depth++;
+                    expr.getLeftExpression().accept(this);
+                    conditions.add(logic);
+                    expr.getRightExpression().accept(this);
+                    if(  depth != 0 ){
+                        depth--;
+                    }
+                }
+
+                @Override
+                protected void visitBinaryExpression(BinaryExpression expr) {
+                    if (expr instanceof ComparisonOperator) {
+                    	conditions.add(expr.getLeftExpression() +  " " + expr.getStringExpression() + " " + expr.getRightExpression());
+                    	
+                    } 
+                    super.visitBinaryExpression(expr); 
+                }
+
+                @Override
+                public void visit(AndExpression expr) {
+                    processLogicalExpression(expr, "AND");
+
+                }
+                @Override
+                public void visit(OrExpression expr) {
+                    processLogicalExpression(expr, "OR");
+                }
+                @Override
+                public void visit(Parenthesis parenthesis) {
+                	conditions.add("(");
+                    parenthesis.getExpression().accept(this);
+                    conditions.add(")");
+                }
+                
+            });
+        	
+        	if(!conditions.isEmpty()){
+        		q = q + "WHERE";
+            	
+            	for(String c : conditions){
+            		q = q + " " + c;
+            	}
+        	}
+        	        	        	
+    	}
+    	
+    	return q;
+    }
+    
     // Test
     public String toString(){
     	    	    	
@@ -144,6 +221,10 @@ class Query {
     	// Add more attributes  	
     	
     	return structure.toString();
+    }
+    
+    String getQuery(){
+    	return sql;
     }
     
 }
