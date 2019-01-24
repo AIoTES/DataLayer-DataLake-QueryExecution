@@ -51,7 +51,13 @@ class Query {
             logger.debug("Column names: " + columns);
 			
 			// Get conditions
-            conditions = getAndConditions(select); // Only simple conditions using AND are supported 
+            try{
+            	conditions = getAndConditions(select); // Only simple conditions using AND are supported
+            }catch(NullPointerException e){
+            	conditions = null;
+            	logger.warn("No conditions");
+            }
+             
          // TODO: add more condition operators
             logger.debug("AND conditions: " + conditions);
           				
@@ -76,8 +82,9 @@ class Query {
         logger.debug(selectitems.size() + " query items identified");
         String[] columns = new String[selectitems.size()];
         for(int i=0;i<selectitems.size();i++){
-           Expression expression=((SelectExpressionItem) selectitems.get(i)).getExpression();  
-           logger.debug("Expression: "+expression);
+        	// TODO: add support to *
+           Expression expression = ((SelectExpressionItem) selectitems.get(i)).getExpression();  
+           logger.debug("Expression: " + expression);
            if( expression instanceof Column){
                // A column name
         	   Column col=(Column)expression;
@@ -145,60 +152,66 @@ class Query {
     	Statement statement = CCJSqlParserUtil.parse(sql);
     	
     	if(statement instanceof Select){
-    		q = "SELECT ";
-        	for (int i = 0; i < columns.length; i++){
-    			q = q + columns[i];
-    			if(i==columns.length-1) q = q + " ";
-    			else q = q + ", ";
-    		}
+//    		q = "SELECT ";
+//        	for (int i = 0; i < columns.length; i++){
+//    			q = q + columns[i];
+//    			if(i==columns.length-1) q = q + " ";
+//    			else q = q + ", ";
+//    		}
+//    		q = q + "FROM " + index;
+    		
+    		// For independent data storage.
+    		q = "SELECT * ";
+    		q = q + "FROM " + columns[0];
+    		       	
         	
         	PlainSelect ps = (PlainSelect)((Select)statement).getSelectBody();
         	
         	Expression expr = ps.getWhere();
-        	
         	List<String> conditions = new ArrayList<String>();
-        	
-        	expr.accept(new ExpressionVisitorAdapter() {
-        		int depth = 0;
-                public void processLogicalExpression( BinaryExpression expr, String logic){
-                	depth++;
-                    expr.getLeftExpression().accept(this);
-                    conditions.add(logic);
-                    expr.getRightExpression().accept(this);
-                    if(  depth != 0 ){
-                        depth--;
+        	if(expr != null){
+        		expr.accept(new ExpressionVisitorAdapter() {
+            		int depth = 0;
+                    public void processLogicalExpression( BinaryExpression expr, String logic){
+                    	depth++;
+                        expr.getLeftExpression().accept(this);
+                        conditions.add(logic);
+                        expr.getRightExpression().accept(this);
+                        if(  depth != 0 ){
+                            depth--;
+                        }
                     }
-                }
 
-                @Override
-                protected void visitBinaryExpression(BinaryExpression expr) {
-                    if (expr instanceof ComparisonOperator) {
-                    	conditions.add(expr.getLeftExpression() +  " " + expr.getStringExpression() + " " + expr.getRightExpression());
-                    	
-                    } 
-                    super.visitBinaryExpression(expr); 
-                }
+                    @Override
+                    protected void visitBinaryExpression(BinaryExpression expr) {
+                        if (expr instanceof ComparisonOperator) {
+                        	conditions.add(expr.getLeftExpression() +  " " + expr.getStringExpression() + " " + expr.getRightExpression());
+                        	
+                        } 
+                        super.visitBinaryExpression(expr); 
+                    }
 
-                @Override
-                public void visit(AndExpression expr) {
-                    processLogicalExpression(expr, "AND");
+                    @Override
+                    public void visit(AndExpression expr) {
+                        processLogicalExpression(expr, "AND");
 
-                }
-                @Override
-                public void visit(OrExpression expr) {
-                    processLogicalExpression(expr, "OR");
-                }
-                @Override
-                public void visit(Parenthesis parenthesis) {
-                	conditions.add("(");
-                    parenthesis.getExpression().accept(this);
-                    conditions.add(")");
-                }
-                
-            });
+                    }
+                    @Override
+                    public void visit(OrExpression expr) {
+                        processLogicalExpression(expr, "OR");
+                    }
+                    @Override
+                    public void visit(Parenthesis parenthesis) {
+                    	conditions.add("(");
+                        parenthesis.getExpression().accept(this);
+                        conditions.add(")");
+                    }
+                    
+                });
+        	}
         	
         	if(!conditions.isEmpty()){
-        		q = q + "WHERE";
+        		q = q + " WHERE";
             	
             	for(String c : conditions){
             		q = q + " " + c;

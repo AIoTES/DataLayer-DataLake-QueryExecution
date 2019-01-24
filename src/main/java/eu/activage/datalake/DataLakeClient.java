@@ -23,7 +23,7 @@ import com.google.gson.JsonParser;
 class DataLakeClient {
 	
 	String historicUrl;
-	// TODO: integrate with independent data storage and indexing service
+	// TODO: integrate with indexing service
 	String storageUrl;
 	
 	private final Logger logger = LoggerFactory.getLogger(DataLakeClient.class);
@@ -53,10 +53,17 @@ class DataLakeClient {
 			}
 			response = res.toString();
 		}else{
-			// TODO: integrate independent data storage
-			// TODO: map sql query to independent data storage call
-			// What are the "database" and "table" values?
-			response = getFromIndependentStorage(q.index, q.index, q.createQueryString()); // DB, table, query
+			// What are the "database" and "table" values? - SHOULD GET THESE VALUES FROM THE INDEXING SERVICE (?)
+			// TODO: test different types of conditions
+			JsonArray res = new JsonArray();
+			JsonParser parser = new JsonParser();
+			for (int i = 0; i < q.columns.length; i++){
+				System.out.println(q.createQueryString()); 
+				String data = getFromIndependentStorage(q.index, q.columns[i], q.createQueryString()); // DB, table, query
+				// response = getFromIndependentStorage(q.index, q.index, q.createQueryString()); // DB, table, query
+				res.addAll(parser.parse(data).getAsJsonArray());
+			}
+			response = res.toString();
 		}
 				
 		return response;
@@ -115,28 +122,23 @@ class DataLakeClient {
 	
 	
 	String getFromIndependentStorage(String db, String table, String query) throws Exception{
-		// TODO: test with independent database
 		String response = "";
-				
 		JsonObject body = new JsonObject();
 		body.addProperty("db", db);
 		body.addProperty("table", table);
 		body.addProperty("query", query);
-		
-		// test
-//		response = body.toString();
-		
+				
 		HttpClient httpClient = HttpClientBuilder.create().build();
-		HttpPost httpPost = new HttpPost(storageUrl + "independentStorage/query");
+		HttpPost httpPost = new HttpPost(storageUrl + "independentStorage/select");
 		
 		 HttpEntity translationEntity = new StringEntity(body.toString(), ContentType.APPLICATION_JSON);
 		 httpPost.setEntity(translationEntity);
 		 HttpResponse httpResponse = httpClient.execute(httpPost);
+		 HttpEntity responseEntity = httpResponse.getEntity();
 		 // Do something with the response code?
 		 int responseCode = httpResponse.getStatusLine().getStatusCode();
 		 logger.info("Response code: " + httpResponse.getStatusLine().getStatusCode());
 		 if(responseCode==200){
-			 HttpEntity responseEntity = httpResponse.getEntity();
 			 if(responseEntity!=null) {
 				 response = EntityUtils.toString(responseEntity);
 			 }

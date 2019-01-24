@@ -90,13 +90,13 @@ public class QueryExecution {
     public static void main(String[] args) throws Exception {
     	int port = 4570;
     	String historicUrl = "http://localhost:4569/historic";
-    	String storageUrl = "http://localhost:4568/"; // TODO: use default URL of the independent data storage
+    	String storageUrl = "http://localhost:4567/"; // TODO: use default URL of the independent data storage
     	if (args.length > 0){
     		port = Integer.parseInt(args[0]);
     		if (args.length > 1){
-    			historicUrl = args[1];
+    			storageUrl = args[1];
     			if (args.length > 2){
-        			storageUrl = args[2];
+    				historicUrl = args[2];
         		}
     		}
     	}
