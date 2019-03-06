@@ -1,6 +1,6 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <groupId>eu.activage.datalake</groupId>
+  <groupId>eu.activage.datalake.query</groupId>
   <artifactId>QueryExecution</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   
@@ -19,9 +19,44 @@
          </snapshots>
          <url>https://oss.sonatype.org/content/groups/public/</url>
      </repository>
+     
+     <!-- INTER-IoT - FOR SYNTACTIC TRANSLATION - REMOVE WHEN SILv2 IS AVAILABLE -->
+     <repository>
+          <id>nexus.inter-iot.eu-releases</id>
+          <url>http://nexus.inter-iot.eu/repository/maven-releases/</url>
+      </repository>
+      <repository>
+          <id>nexus.inter-iot.eu-snapshots</id>
+          <url>http://nexus.inter-iot.eu/repository/maven-snapshots/</url>
+          <snapshots>
+              <updatePolicy>always</updatePolicy>
+          </snapshots>
+      </repository>
+      <!-- INTER-IoT END -->
+     
   </repositories>
 
   <dependencies>
+  	
+  	 <!-- INTER-IoT - FOR SYNTACTIC TRANSLATION - REMOVE WHEN SILv2 IS AVAILABLE -->
+	  <dependency>
+		<groupId>eu.inter-iot.translators</groupId>
+		<artifactId>syntactic-translators</artifactId>
+		<version>1.0</version>
+	  </dependency>
+	  <dependency>
+		<groupId>eu.interiot.intermw</groupId>
+		<artifactId>mw.commons.impl</artifactId>
+		<version>2.3.0</version>
+		<scope>test</scope>
+	  </dependency>
+	  <dependency>
+		<groupId>eu.interiot.intermw</groupId>
+		<artifactId>mw.comm.broker.api</artifactId>
+		<version>2.3.0</version>
+	  </dependency>
+  	<!-- INTER-IoT END -->
+  	
   	<dependency>
         <groupId>junit</groupId>
         <artifactId>junit</artifactId>
@@ -102,7 +137,7 @@
       			<configuration>
         			<archive>
           				<manifest>
-            				<mainClass>eu.activage.datalake.QueryExecution</mainClass>
+            				<mainClass>eu.activage.datalake.query.QueryExecution</mainClass>
           				</manifest>
         			</archive>
         			<descriptorRefs>

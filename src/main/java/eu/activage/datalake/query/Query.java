@@ -1,4 +1,4 @@
-package eu.activage.datalake;
+package eu.activage.datalake.query;
 
 import java.util.ArrayList;
 import java.util.List;

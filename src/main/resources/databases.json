@@ -1,0 +1,24 @@
+[
+	{
+		"id": "uaal",
+		"type": "platform",
+		"url": "http://160.40.50.78:1080/api/assignments/measurements/all",
+		"platformId": "",
+		"platformType": "http://inter-iot.eu/UniversAAL",
+		"upstreamAlignmentName": "UniversAAL_CO_align",
+		"upstreamAlignmentVersion": "3.0.1",
+		"downstreamAlignmentName": "",
+		"downstreamAlignmentVersion": ""
+	},
+	{
+		"id": "prueba",
+		"type": "common",
+		"url": "http://localhost:4567/",
+		"platformId": "",
+		"platformType": "",
+		"upstreamAlignmentName": "",
+		"upstreamAlignmentVersion": "",
+		"downstreamAlignmentName": "",
+		"downstreamAlignmentVersion": ""
+	}
+]

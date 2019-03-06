@@ -1,4 +1,4 @@
-package eu.activage.datalake;
+package eu.activage.datalake.query;
 
 import java.net.URL;
 
@@ -20,9 +20,10 @@ public class QueryExecution {
     private final Logger logger = LoggerFactory.getLogger(QueryExecution.class);
     private DataLakeClient client;
     
-    public QueryExecution(int port, String historicUrl, String storageUrl) {
+    
+    public QueryExecution(int port) {
         this.port = port;
-        client = new DataLakeClient(historicUrl, storageUrl);
+        client = new DataLakeClient();
     }
     
     public void start() throws Exception {
@@ -89,18 +90,18 @@ public class QueryExecution {
 
     public static void main(String[] args) throws Exception {
     	int port = 4570;
-    	String historicUrl = "http://localhost:4569/historic";
-    	String storageUrl = "http://localhost:4567/"; // TODO: use default URL of the independent data storage
+ //   	String historicUrl = "http://localhost:4569/historic";
+ //   	String storageUrl = "http://localhost:4567/"; // TODO: use default URL of the independent data storage
     	if (args.length > 0){
     		port = Integer.parseInt(args[0]);
-    		if (args.length > 1){
-    			storageUrl = args[1];
-    			if (args.length > 2){
-    				historicUrl = args[2];
-        		}
-    		}
+//    		if (args.length > 1){
+//    			storageUrl = args[1];
+//    			if (args.length > 2){
+//    				historicUrl = args[2];
+//        		}
+//    		}
     	}
-    	new QueryExecution(port, historicUrl, storageUrl).start();
+    	new QueryExecution(port).start();
     }
     
     
