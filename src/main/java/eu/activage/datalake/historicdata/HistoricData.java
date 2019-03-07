@@ -98,6 +98,24 @@ public class HistoricData {
  	   String name = "admin";
  	   String password = "P@ssw0rd";
  	   
+ 	   // Device id should not be a numeric value. TODO: define standard interface for webservices
+ 	   // Temporary fix
+ 	   // 0 for motion sensor, 1 for door sensor and 2 for panic buttons
+ 	   switch(deviceId){
+ 	    case "motion":
+ 	    	deviceId="0";
+ 	    	break;
+ 	    case "door":
+ 	    	deviceId="1";
+ 	    	break;
+ 	    case "button":
+ 	    	deviceId="2";
+ 	    	break;
+ 	    default:
+ 	    	logger.info("Unrecognized device type");
+ 	   }
+ 	   
+ 	   
  	   if(url!=null && !url.isEmpty()){
  		   // Call webservice and get data in the platform's format
  		   // TODO: define standard interface
@@ -123,6 +141,7 @@ public class HistoricData {
  				    .build();
  		   HttpGet httpGet = new HttpGet(uri);
  		   httpGet.addHeader(HttpHeaders.AUTHORIZATION, authHeader);
+ 		   httpGet.addHeader(HttpHeaders.CACHE_CONTROL, "no-cache");
  		   System.out.println(uri.toString());
  		   		   		   
  		   HttpResponse httpResponse = httpClient.execute(httpGet);

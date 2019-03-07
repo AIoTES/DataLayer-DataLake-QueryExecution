@@ -44,13 +44,17 @@ class Query {
 		    				
 			// Get table names
 			index = getTableNames(select).get(0); // Only one table
-			logger.debug("Index: " + index);
+			logger.info("Index: " + index);
 			
 			// Get column names
 			columns = getColumnNames(select); // TODO: add support to expressions?
-            logger.debug("Column names: " + columns);
+            logger.info("Column names: ");
+            for(int i=0; i<columns.length; i++){
+            	logger.info(columns[i]);
+            }
 			
 			// Get conditions
+            logger.info("Conditions: ");
             try{
             	conditions = getAndConditions(select); // Only simple conditions using AND are supported
             }catch(NullPointerException e){
@@ -59,7 +63,7 @@ class Query {
             }
              
          // TODO: add more condition operators
-            logger.debug("AND conditions: " + conditions);
+            
           				
 		}else{
 			throw new Exception("Query not supported: " + sql);
@@ -79,23 +83,23 @@ class Query {
     protected String[] getColumnNames(Select select) throws Exception{	
     	PlainSelect plain=(PlainSelect)select.getSelectBody();     
         List selectitems=plain.getSelectItems();
-        logger.debug(selectitems.size() + " query items identified");
+        logger.info(selectitems.size() + " query items identified");
         String[] columns = new String[selectitems.size()];
         for(int i=0;i<selectitems.size();i++){
         	// TODO: add support to *
            Expression expression = ((SelectExpressionItem) selectitems.get(i)).getExpression();  
-           logger.debug("Expression: " + expression);
+           logger.info("Expression: " + expression.toString());
            if( expression instanceof Column){
                // A column name
         	   Column col=(Column)expression;
-               logger.debug(col.getTable()+","+col.getColumnName());      
+ //              logger.info(col.getTable()+","+col.getColumnName());      
                columns[i] = col.getColumnName();
                // Do something with col.getTable() to support queries over multiple tables
 
            }else if (expression instanceof Function){
         	   // An expression
                Function function = (Function) expression;
-               logger.debug(function.getAttribute()+","+function.getName()+""+function.getParameters()); 
+               logger.info(function.getAttribute()+","+function.getName()+""+function.getParameters()); 
                // TODO
                throw new Exception("Expressions are not supported");
            }

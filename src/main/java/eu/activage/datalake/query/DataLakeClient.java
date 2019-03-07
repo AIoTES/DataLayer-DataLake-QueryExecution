@@ -52,6 +52,7 @@ class DataLakeClient {
 		// Get database type and location
 		String url = dbManager.getUrl(dbId); // TODO: this should be a part of the historic data service
 			
+		logger.info("Query parameterms: " + q.toString()); //DEBUG
 		
 		// TODO: analyze query and identify data sources (by the index) Table = index
 		// In the current version, indices represent platforms (for the historic data module) and columns represent devices (or magnitudes?)
