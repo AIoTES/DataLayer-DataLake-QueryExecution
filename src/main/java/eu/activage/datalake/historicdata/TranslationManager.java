@@ -98,7 +98,7 @@ public class TranslationManager {
 	
 	private String translateFromFiware(String data) throws Exception{
 		// Translate data to JSON-LD
-        logger.debug("Translate data from Fiware...  ");
+//        logger.debug("Translate data from Fiware...  ");
         FIWAREv2Translator translator2 = new FIWAREv2Translator();
         Model transformedModel = translator2.toJenaModelTransformed(data);
         
@@ -110,7 +110,7 @@ public class TranslationManager {
 	
 	private String translateFromSofia(String data) throws Exception{
 		// Translate data to JSON-LD
-        logger.debug("Translate data from SOFIA2...  ");
+//        logger.debug("Translate data from SOFIA2...  ");
         Sofia2Translator translator = new Sofia2Translator();
         Model transformedModel = translator.toJenaModelTransformed(data);
 
@@ -120,7 +120,7 @@ public class TranslationManager {
 	
 	private String translateFromUniversaal(String data) throws IOException{
 		// Transform data to JSON-LD
-        logger.debug("Translate data from universAAL...  ");
+//        logger.debug("Translate data from universAAL...  ");
 	    Model eventModel = ModelFactory.createDefaultModel();
 	    eventModel.read(new ByteArrayInputStream(data.getBytes()), null, "TURTLE");
 	     
@@ -151,7 +151,7 @@ public class TranslationManager {
 		   HttpClient httpClient = HttpClientBuilder.create().build();
 		   if(ipsmUrl!=null && !ipsmUrl.equals("")){
 			   // Call IPSM for semantic translation
-			   logger.info("Sending data to IPSM...");
+//			   logger.info("Sending data to IPSM...");
 			   HttpPost ipsmPost = new HttpPost(ipsmUrl + "translation");
 			   JsonObject translationData = new JsonObject();
 			   JsonObject alignId = new JsonObject(); 
@@ -164,15 +164,14 @@ public class TranslationManager {
 			   HttpEntity translationEntity = new StringEntity(translationData.toString(), ContentType.APPLICATION_JSON);
 			   ipsmPost.setEntity(translationEntity);
 			   HttpResponse httpResponse = httpClient.execute(ipsmPost);
-			   // Do something with the response code?
 			   int responseCode = httpResponse.getStatusLine().getStatusCode();
-			   logger.info("Response code: " + httpResponse.getStatusLine().getStatusCode());
+//			   logger.info("Response code: " + httpResponse.getStatusLine().getStatusCode());
 			   if(responseCode==200){
 				   HttpEntity responseEntity = httpResponse.getEntity();
 				   if(responseEntity!=null) {
 					   JsonParser parser = new JsonParser();
 					   JsonObject responseBody = parser.parse(EntityUtils.toString(responseEntity)).getAsJsonObject();
-					   logger.info("Message: " + responseBody.get("message").getAsString());
+//					   logger.info("Message: " + responseBody.get("message").getAsString());
 					   result = responseBody.get("graphStr").getAsString();
 				   }
 			   }else{

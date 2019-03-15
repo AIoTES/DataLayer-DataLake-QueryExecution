@@ -1,18 +1,15 @@
 package eu.activage.datalake.historicdata;
 
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Base64;
 import java.util.Date;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpHeaders;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.URIBuilder;
-import org.apache.http.impl.client.HttpClientBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,7 +62,10 @@ public class HistoricData {
  			   JsonArray input = parser.parse(resultRaw).getAsJsonArray();
  			   JsonArray output = new JsonArray();
  			   
- 			   logger.info("Retrieved " + input.size() + " measurements.");
+ 			   logger.info("Retrieved " + input.size() + " measurements from " + id);
+ 			   logger.info("Platform type: " + platformType);
+ 			   if(alignment!=null && !alignment[0].isEmpty() && !alignment[1].isEmpty()) logger.info("Semantic translation using " + alignment[0] + " alignment.");
+ 			   logger.info("Processing data...");
  			   for(int i=0; i<input.size(); i++){
  				   String translatedData = null;
  				   // Syntactic translation
@@ -80,6 +80,7 @@ public class HistoricData {
  				   
  				   output.add(translatedData);
  			   }
+ 			  logger.info("Success");
  			   result = output.toString();   
  		   }else{
  			   // Return data in universAAL format
@@ -127,29 +128,54 @@ public class HistoricData {
  		   
  		   // Basic authentication
  		   String authString = name + ":" + password;
- 		   byte[] authEncBytes = Base64.getEncoder().encode(authString.getBytes());
+ 		   byte[] authEncBytes = Base64.getEncoder().encode(authString.getBytes("UTF-8"));
  		   String authStringEnc = new String(authEncBytes);
  		   String authHeader = "Basic " + authStringEnc;
- 		   System.out.println("Authentication header: " + authHeader);
- 		   		   
- 		   HttpClient httpClient = HttpClientBuilder.create().build();
+// 		   System.out.println("Authentication header: " + authHeader);
+ 		   
  		   URI uri = new URIBuilder(url)
  				    .addParameter("deviceType", deviceId)  // 2. No deviceId, using this value as type
  				    .addParameter("startDate", f.format(startDate) + "Z") 
  				    .addParameter("endDate", f.format(endDate) + "Z")
  				    .addParameter("tenantAuthToken", authToken)
  				    .build();
- 		   HttpGet httpGet = new HttpGet(uri);
- 		   httpGet.addHeader(HttpHeaders.AUTHORIZATION, authHeader);
- 		   httpGet.addHeader(HttpHeaders.CACHE_CONTROL, "no-cache");
- 		   System.out.println(uri.toString());
- 		   		   		   
- 		   HttpResponse httpResponse = httpClient.execute(httpGet);
- 		   // Do something with the response code?
- 		   HttpEntity responseEntity = httpResponse.getEntity();
- 		   if(responseEntity!=null) {
- 			   resultRaw = responseEntity.toString();
- 		   } 
+ 		   
+ 		   // FIXME: connection issues from UPV if a proxy is not used
+ 		  System.setProperty("http.proxyHost", "158.42.247.100");
+		  System.setProperty("http.proxyPort", "8080");
+		  System.setProperty("https.proxyHost",  "158.42.247.100");
+		  System.setProperty("https.proxyPort", "8080");
+ 		   
+// 		  System.out.println(uri.toString()); 
+ 		   
+ 		  HttpURLConnection con = (HttpURLConnection) uri.toURL().openConnection();
+
+ 			// optional default is GET
+ 		 con.setRequestMethod("GET");
+
+ 			//add request header
+ 		 con.setRequestProperty("User-Agent", "Mozilla/5.0");
+ 		 con.setRequestProperty("Authorization",  authHeader);
+ 			
+ 		 int responseCode = con.getResponseCode();
+ 		 System.out.println("\nSending 'GET' request to URL : " + uri.toURL());
+ 		 System.out.println("Response Code : " + responseCode);
+
+ 		 if(responseCode>=200 && responseCode<=299){
+ 			BufferedReader in = new BufferedReader(
+ 	 		        new InputStreamReader(con.getInputStream()));
+ 	 		String inputLine;
+ 	 		StringBuffer response = new StringBuffer();
+ 	 		while ((inputLine = in.readLine()) != null) {
+ 	 			response.append(inputLine);
+ 	 		}
+ 	 		in.close();
+ 	 			
+ 	 		resultRaw = response.toString();
+ 		 }else{
+ 			throw new Exception("Unsuccessful response code from server: " + responseCode);
+ 		 }
+ 			
  	   }else{
  		// Get test data from a file
  		   URL test = Resources.getResource("uaal-data.txt");
