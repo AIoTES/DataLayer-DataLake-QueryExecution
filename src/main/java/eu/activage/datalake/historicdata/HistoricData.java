@@ -66,6 +66,7 @@ public class HistoricData {
  			   logger.info("Platform type: " + platformType);
  			   if(alignment!=null && !alignment[0].isEmpty() && !alignment[1].isEmpty()) logger.info("Semantic translation using " + alignment[0] + " alignment.");
  			   logger.info("Processing data...");
+ 			   manager.setPlatformId(dbManager.getPlatformId(id));
  			   for(int i=0; i<input.size(); i++){
  				   String translatedData = null;
  				   // Syntactic translation

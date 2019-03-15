@@ -3,7 +3,7 @@
 		"id": "uaal",
 		"type": "platform",
 		"url": "http://160.40.50.78:1080/api/assignments/measurements/all",
-		"platformId": "",
+		"platformId": "http://inter-iot.eu/platforms/uaal-greece",
 		"platformType": "http://inter-iot.eu/UniversAAL",
 		"upstreamAlignmentName": "UniversAAL_CO_align",
 		"upstreamAlignmentVersion": "3.0.1",

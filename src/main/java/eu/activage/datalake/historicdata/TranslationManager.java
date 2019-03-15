@@ -27,6 +27,7 @@ import com.google.gson.JsonParser;
 import eu.interiot.message.Message;
 import eu.interiot.message.MessageMetadata;
 import eu.interiot.message.MessagePayload;
+import eu.interiot.message.ID.EntityID;
 import eu.interiot.message.managers.URI.URIManagerMessageMetadata;
 import eu.interiot.message.metadata.PlatformMessageMetadata;
 import eu.interiot.services.syntax.FIWAREv2Translator;
@@ -50,6 +51,7 @@ public class TranslationManager {
 	private final Logger logger = LoggerFactory.getLogger(TranslationManager.class);
 	
 	private String ipsmUrl; // http://localhost:8888/
+	private String platformId;
 	
 	public TranslationManager(){
 		Properties prop = new Properties();
@@ -71,7 +73,11 @@ public class TranslationManager {
     			}
     		}
     	}
-		
+		platformId = "";
+	}
+	
+	void setPlatformId(String id){
+		platformId = id;
 	}
 	
 	public String syntacticTranslation(String data, String type) throws Exception{
@@ -135,6 +141,8 @@ public class TranslationManager {
 	        PlatformMessageMetadata metadata = new MessageMetadata().asPlatformMessageMetadata();
 	        metadata.initializeMetadata();
 	        metadata.addMessageType(URIManagerMessageMetadata.MessageTypesEnum.OBSERVATION);
+	        // TODO: Add senderPlatformId?
+	        if(!platformId.isEmpty()) metadata.setSenderPlatformId(new EntityID(platformId));
 	        callbackMessage.setMetadata(metadata);
 	        
 	        //Finish creating the message
