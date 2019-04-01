@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -78,6 +79,39 @@ public class QueryExecution {
    		 		response.header("Content-Type", "application/json;charset=UTF-8");
    		 		response.status(200);
    		 		return responseBody.toString();
+    		});
+    		
+    		spark.post("/querytranslation", (request, response) -> {
+//    			JsonObject responseBody = new JsonObject();  
+    			JsonArray result;
+    			    			
+    			try {
+    				// Extract query
+    				JsonParser parser = new JsonParser();
+    				JsonObject reqBody = (JsonObject) parser.parse(request.body());
+    				String sql = reqBody.get("query").getAsString();
+    			
+    				logger.info("Received query: " + sql);
+    			
+    				// Parse query
+    				Query query = new Query(sql);
+    				    				
+    				// Execute query   		
+    				result = client.translate(query);
+    		
+    				// Format response
+//    				responseBody.add("records", result);
+    			
+    			} catch (Exception e) {
+                    response.status(400);
+                    e.printStackTrace();
+                    return e.getMessage();
+                }
+    		
+   		 		response.header("Content-Type", "application/json;charset=UTF-8");
+   		 		response.status(200);
+//   		 		return responseBody.toString();
+   		 		return result.toString();
     		});
     	
  //   	});

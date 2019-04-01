@@ -53,7 +53,8 @@ public class HistoricData {
     	
     	
     	// Get historic data from the webservice
-    	String resultRaw = callWebService(url, deviceId, dateFrom, dateTo);
+    	URI uri = createUri(url, deviceId, dateFrom, dateTo);
+    	String resultRaw = callWebService(uri);
     	    	
     	// Translation of each individual message
  	    if(!resultRaw.isEmpty()){
@@ -93,39 +94,60 @@ public class HistoricData {
     	return result;
     }
     
-    String callWebService(String url, String deviceId, String dateFrom, String dateTo) throws Exception{
+    public URI createUri(String url, String deviceId, String dateFrom, String dateTo) throws Exception{
+    	URI uri = null;
+    	// Test with DS Greece webservice
+  	   
+  	   String authToken = "a7e46008-b5ab-449c-8777-e39c4b30ed49"; // TODO: get all parameter from api call or properties
+  	   
+  	   // Device id should not be a numeric value. TODO: define standard interface for webservices
+  	   // Temporary fix
+  	   // 0 for motion sensor, 1 for door sensor and 2 for panic buttons
+  	   switch(deviceId){
+  	    case "motion":
+  	    	deviceId="0";
+  	    	break;
+  	    case "door":
+  	    	deviceId="1";
+  	    	break;
+  	    case "button":
+  	    	deviceId="2";
+  	    	break;
+  	    default:
+  	    	logger.info("Unrecognized device type");
+  	   }
+  	   
+  	   
+  	   if(url!=null && !url.isEmpty()){
+  		   // Call webservice and get data in the platform's format
+  		   // TODO: define standard interface
+  		   
+  		   SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd"); // Format of the input query date values. No time information included
+  		   Date startDate = f.parse(dateFrom);
+  		   Date endDate = f.parse(dateTo);
+  		   f.applyPattern("yyyy-MM-dd'T'HH:mm:ss.SSS"); // Example: 2018-02-01T00:00:00.000Z
+  		     		   
+  		   uri = new URIBuilder(url)
+  				    .addParameter("deviceType", deviceId)  // TODO: add deviceId ?
+  				    .addParameter("startDate", f.format(startDate) + "Z") 
+  				    .addParameter("endDate", f.format(endDate) + "Z")
+  				    .addParameter("tenantAuthToken", authToken) // TODO: remove this parameter
+  				    .build();
+  	   }
+  	   
+  	   return uri;
+    }
+    
+    String callWebService(URI uri) throws Exception{
     	// Test with DS Greece webservice
  	   String resultRaw = "";
- 	   String authToken = "a7e46008-b5ab-449c-8777-e39c4b30ed49"; // TODO: get all parameter from api call or properties
+// 	   String authToken = "a7e46008-b5ab-449c-8777-e39c4b30ed49"; // TODO: get all parameter from api call or properties
  	   String name = "admin";
  	   String password = "P@ssw0rd";
- 	   
- 	   // Device id should not be a numeric value. TODO: define standard interface for webservices
- 	   // Temporary fix
- 	   // 0 for motion sensor, 1 for door sensor and 2 for panic buttons
- 	   switch(deviceId){
- 	    case "motion":
- 	    	deviceId="0";
- 	    	break;
- 	    case "door":
- 	    	deviceId="1";
- 	    	break;
- 	    case "button":
- 	    	deviceId="2";
- 	    	break;
- 	    default:
- 	    	logger.info("Unrecognized device type");
- 	   }
- 	   
- 	   
- 	   if(url!=null && !url.isEmpty()){
+ 	    	   
+ 	   if(uri!=null){
  		   // Call webservice and get data in the platform's format
  		   // TODO: define standard interface
- 		   
- 		   SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd"); // Format of the input query date values. No time information included
- 		   Date startDate = f.parse(dateFrom);
- 		   Date endDate = f.parse(dateTo);
- 		   f.applyPattern("yyyy-MM-dd'T'HH:mm:ss.SSS"); // Example: 2018-02-01T00:00:00.000Z
  		   
  		   // Basic authentication
  		   String authString = name + ":" + password;
@@ -133,13 +155,6 @@ public class HistoricData {
  		   String authStringEnc = new String(authEncBytes);
  		   String authHeader = "Basic " + authStringEnc;
 // 		   System.out.println("Authentication header: " + authHeader);
- 		   
- 		   URI uri = new URIBuilder(url)
- 				    .addParameter("deviceType", deviceId)  // 2. No deviceId, using this value as type
- 				    .addParameter("startDate", f.format(startDate) + "Z") 
- 				    .addParameter("endDate", f.format(endDate) + "Z")
- 				    .addParameter("tenantAuthToken", authToken)
- 				    .build();
  		   
  		   // FIXME: connection issues from UPV if a proxy is not used
  		  System.setProperty("http.proxyHost", "158.42.247.100");

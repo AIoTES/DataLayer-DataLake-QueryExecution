@@ -28,7 +28,7 @@ import net.sf.jsqlparser.util.TablesNamesFinder;
 
 class Query {
 	private String sql;
-	String index;
+	String[] index;
 	String[] columns;
 	String [] conditions;
 	private final Logger logger = LoggerFactory.getLogger(Query.class);
@@ -43,8 +43,15 @@ class Query {
 			Select select = (Select) stmt;
 		    				
 			// Get table names
-			index = getTableNames(select).get(0); // Only one table
-			logger.info("Index: " + index);
+//			index = getTableNames(select).get(0); // Only one table
+			List<String> list = (List<String>) getTableNames(select);
+			index = list.toArray(new String[list.size()]);
+			
+//			logger.info("Index: " + index);
+			logger.info("Table names: ");
+            for(int i=0; i<index.length; i++){
+            	logger.info(index[i]);
+            }
 			
 			// Get column names
 			columns = getColumnNames(select); // TODO: add support to expressions?
@@ -232,7 +239,8 @@ class Query {
     	    	    	
     	Gson gson = new Gson();
     	JsonObject structure = new JsonObject();
-    	structure.addProperty("Table", index);
+//    	structure.addProperty("Table", index);
+    	structure.addProperty("Tables", gson.toJson(index));
     	structure.addProperty("Columns", gson.toJson(columns));
     	structure.addProperty("Conditions", gson.toJson(conditions));
     	// Add more attributes  	

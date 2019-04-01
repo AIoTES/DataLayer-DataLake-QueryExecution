@@ -141,8 +141,7 @@ public class TranslationManager {
 	        PlatformMessageMetadata metadata = new MessageMetadata().asPlatformMessageMetadata();
 	        metadata.initializeMetadata();
 	        metadata.addMessageType(URIManagerMessageMetadata.MessageTypesEnum.OBSERVATION);
-	        // TODO: Add senderPlatformId?
-	        if(!platformId.isEmpty()) metadata.setSenderPlatformId(new EntityID(platformId));
+	        if(!platformId.isEmpty()) metadata.setSenderPlatformId(new EntityID(platformId)); // Add senderPlatformId
 	        callbackMessage.setMetadata(metadata);
 	        
 	        //Finish creating the message
