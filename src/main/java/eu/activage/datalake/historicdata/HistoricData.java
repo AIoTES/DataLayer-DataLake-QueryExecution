@@ -6,16 +6,28 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
+import java.net.URLEncoder;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Base64;
 import java.util.Date;
+
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.utils.URIBuilder;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
 import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
 
@@ -38,9 +50,42 @@ public class HistoricData {
     	manager = new TranslationManager();
     	dbManager = new DatabaseManager();
     }
+      
+    public String getData(String platform, String deviceId, String deviceType, String fromDate, String toDate) throws Exception{
+    	/*
+         * Create and execute call to webservice
+         * */
+		String response = "";
+		
+		logger.info("Retrieving historic data from platform: " + platform);
+		
+		if(dbManager.isIndependentDataStorage(platform)){
+			String query = createIdsQuery(platform, deviceId, fromDate, toDate);
+			response = getFromIds(platform, deviceType, query); // Table = deviceType
+		}else{
+			response = getFromPlatform(platform, deviceId, deviceType, fromDate, toDate);
+		}
+								
+		return response;
+	}
     
+    public URI getURL(String platform, String deviceId, String deviceType, String fromDate, String toDate) throws Exception{
+    	/*
+    	 * Returns the complete URL to call the webservice using GET
+    	 * */
+    	URI response = null;
+    	String url = dbManager.getUrl(platform);
+    	
+    	if(dbManager.isIndependentDataStorage(platform)){
+    		response = createIdsCall(url, platform, deviceId, deviceType, fromDate, toDate);
+		}else{
+			response = createUri(url, deviceId, deviceType, fromDate, toDate);
+		}
+    	return response;
+    }
     
-    public String getFromPlatform(String id, String deviceId, String dateFrom, String dateTo) throws Exception{
+    public String getFromPlatform(String id, String deviceId, String deviceType, String dateFrom, String dateTo) throws Exception{
+    	// Call webservice and get data in the platform's format
     	String result = null;
     	JsonParser parser = new JsonParser();
     	
@@ -53,7 +98,7 @@ public class HistoricData {
     	
     	
     	// Get historic data from the webservice
-    	URI uri = createUri(url, deviceId, dateFrom, dateTo);
+    	URI uri = createUri(url, deviceId, deviceType, dateFrom, dateTo);
     	String resultRaw = callWebService(uri);
     	    	
     	// Translation of each individual message
@@ -94,7 +139,7 @@ public class HistoricData {
     	return result;
     }
     
-    public URI createUri(String url, String deviceId, String dateFrom, String dateTo) throws Exception{
+    URI createUri(String url, String deviceId, String deviceType, String dateFrom, String dateTo) throws Exception{
     	URI uri = null;
     	// Test with DS Greece webservice
   	   
@@ -103,36 +148,35 @@ public class HistoricData {
   	   // Device id should not be a numeric value. TODO: define standard interface for webservices
   	   // Temporary fix
   	   // 0 for motion sensor, 1 for door sensor and 2 for panic buttons
-  	   switch(deviceId){
+  	   switch(deviceType){
   	    case "motion":
-  	    	deviceId="0";
+  	    	deviceType="0";
   	    	break;
   	    case "door":
-  	    	deviceId="1";
+  	    	deviceType="1";
   	    	break;
   	    case "button":
-  	    	deviceId="2";
+  	    	deviceType="2";
   	    	break;
   	    default:
   	    	logger.info("Unrecognized device type");
   	   }
   	   
-  	   
   	   if(url!=null && !url.isEmpty()){
-  		   // Call webservice and get data in the platform's format
   		   // TODO: define standard interface
   		   
   		   SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd"); // Format of the input query date values. No time information included
   		   Date startDate = f.parse(dateFrom);
   		   Date endDate = f.parse(dateTo);
   		   f.applyPattern("yyyy-MM-dd'T'HH:mm:ss.SSS"); // Example: 2018-02-01T00:00:00.000Z
-  		     		   
-  		   uri = new URIBuilder(url)
-  				    .addParameter("deviceType", deviceId)  // TODO: add deviceId ?
-  				    .addParameter("startDate", f.format(startDate) + "Z") 
-  				    .addParameter("endDate", f.format(endDate) + "Z")
-  				    .addParameter("tenantAuthToken", authToken) // TODO: remove this parameter
-  				    .build();
+  		   
+  		   URIBuilder builder = new URIBuilder(url);
+  		   if(deviceType!=null) builder.addParameter("deviceType", deviceType);
+  		   if(deviceId!=null) builder.addParameter("deviceId", deviceId);
+  		   if(startDate!=null) builder.addParameter("startDate", f.format(startDate) + "Z");
+  		   if(endDate!=null) builder.addParameter("endDate", f.format(endDate) + "Z");
+  		   builder.addParameter("tenantAuthToken", authToken); // TODO: remove this parameter
+  		   uri = builder.build();
   	   }
   	   
   	   return uri;
@@ -200,4 +244,88 @@ public class HistoricData {
  	   return resultRaw;
     }
     
+   public String getFromIds(String db, String table, String query) throws Exception{
+    	/*
+    	 * Get data from the Independent Data Storage
+    	 * 
+    	 * */
+		// The db name in the Independent Data Storage is used as identifier in the DB registry
+		String response = "";
+		JsonObject body = new JsonObject();
+		body.addProperty("db", db);
+		body.addProperty("table", table);
+		body.addProperty("query", query);
+		
+		String url = dbManager.getUrl(db);
+		if(!url.endsWith("/")) url = url + "/";
+		
+		HttpClient httpClient = HttpClientBuilder.create().build();
+		
+		HttpPost httpPost = new HttpPost( url + "independentStorage/select");
+		
+		 HttpEntity translationEntity = new StringEntity(body.toString(), ContentType.APPLICATION_JSON);
+		 httpPost.setEntity(translationEntity);
+		 HttpResponse httpResponse = httpClient.execute(httpPost);
+		 HttpEntity responseEntity = httpResponse.getEntity();
+		 // Do something with the response code?
+		 int responseCode = httpResponse.getStatusLine().getStatusCode();
+		 logger.info("Response code: " + httpResponse.getStatusLine().getStatusCode());
+		 if(responseCode==200){
+			 if(responseEntity!=null) {
+				 response = EntityUtils.toString(responseEntity);
+			 }
+		 }else{
+				throw new Exception("Could not retrieve data. Response code received from Independent Data Storage: " + responseCode);
+		 }	
+		return response;
+	}
+   
+   String createIdsQuery(String table, String deviceId, String fromDate, String toDate){
+	   /*
+	    * Construct query for Independent Data Storage
+	    * */
+	   // TODO: ADD deviceType to query?
+	   
+	   String q = "SELECT * ";
+		q = q + "FROM " + table;
+	   // WHERE
+		if(deviceId!=null || fromDate!=null || toDate!=null){ // TODO: check WHERE components
+			q = q + " WHERE ";
+			if(fromDate != null) q = q + "date >= " +  fromDate;
+			if(fromDate != null && toDate !=null) q = q + " AND ";
+			if(toDate != null) q = q + "date <= " +  toDate;
+			if((fromDate != null || toDate != null) && deviceId != null) q = q + " AND ";
+			if(deviceId != null) q = q + "device = " +  deviceId;	
+		}
+		
+	   return q;
+   }
+   
+   URI createIdsCall(String url, String db, String deviceId, String deviceType, String dateFrom, String dateTo) throws Exception{
+	   /*
+	    * Create URL for GET method
+	    * */
+	   URI uri = null;
+	   if(url!=null && !url.isEmpty()){
+  		   // TODO: define standard interface
+  		   if(!url.endsWith("/")) url = url + "/"; // Just in case
+		   
+  		   SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd"); // Format of the input query date values. No time information included
+  		   Date startDate = f.parse(dateFrom);
+  		   Date endDate = f.parse(dateTo);
+  		   f.applyPattern("yyyy-MM-dd'T'HH:mm:ss.SSS"); // Example: 2018-02-01T00:00:00.000Z
+  		   
+  		   String query = createIdsQuery(db, deviceId, startDate.toString(), endDate.toString());
+  		   String encodedQuery = URLEncoder.encode(query, "UTF-8");
+  		   
+  		   URIBuilder builder = new URIBuilder(url + "independentStorage/select");
+  		   builder.addParameter("db", db);
+  		   builder.addParameter("table", deviceType); // TODO: check if this is a good approach
+  		   builder.addParameter("query", encodedQuery);
+  		   uri = builder.build();
+  	   }
+  	   
+  	   return uri;
+	   
+   }
 }

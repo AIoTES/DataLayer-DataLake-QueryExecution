@@ -98,9 +98,6 @@ public class QueryExecution {
     				    				
     				// Execute query   		
     				result = client.translate(query);
-    		
-    				// Format response
-//    				responseBody.add("records", result);
     			
     			} catch (Exception e) {
                     response.status(400);
@@ -110,7 +107,6 @@ public class QueryExecution {
     		
    		 		response.header("Content-Type", "application/json;charset=UTF-8");
    		 		response.status(200);
-//   		 		return responseBody.toString();
    		 		return result.toString();
     		});
     	
@@ -124,16 +120,8 @@ public class QueryExecution {
 
     public static void main(String[] args) throws Exception {
     	int port = 4570;
- //   	String historicUrl = "http://localhost:4569/historic";
- //   	String storageUrl = "http://localhost:4567/"; // TODO: use default URL of the independent data storage
     	if (args.length > 0){
     		port = Integer.parseInt(args[0]);
-//    		if (args.length > 1){
-//    			storageUrl = args[1];
-//    			if (args.length > 2){
-//    				historicUrl = args[2];
-//        		}
-//    		}
     	}
     	new QueryExecution(port).start();
     }
