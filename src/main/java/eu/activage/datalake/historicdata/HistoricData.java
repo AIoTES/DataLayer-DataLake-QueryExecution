@@ -287,15 +287,15 @@ public class HistoricData {
 	   // TODO: ADD deviceType to query?
 	   
 	   String q = "SELECT * ";
-		q = q + "FROM " + table;
+		q = q + "FROM \"" + table + "\"";
 	   // WHERE
 		if(deviceId!=null || fromDate!=null || toDate!=null){ // TODO: check WHERE components
 			q = q + " WHERE ";
-			if(fromDate != null) q = q + "date >= " +  fromDate;
+			if(fromDate != null) q = q + "time >= '" +  fromDate + "'"; // String value
 			if(fromDate != null && toDate !=null) q = q + " AND ";
-			if(toDate != null) q = q + "date <= " +  toDate;
+			if(toDate != null) q = q + "time <= '" +  toDate + "'"; // String value
 			if((fromDate != null || toDate != null) && deviceId != null) q = q + " AND ";
-			if(deviceId != null) q = q + "device = " +  deviceId;	
+			if(deviceId != null) q = q + "device = '" +  deviceId + "'";	// String value
 		}
 		
 	   return q;
