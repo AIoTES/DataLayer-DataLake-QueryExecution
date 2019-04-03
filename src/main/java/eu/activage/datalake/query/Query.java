@@ -1,8 +1,6 @@
 package eu.activage.datalake.query;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -238,42 +236,43 @@ class Query {
     
     // Uility methods
  	String getStartDate() throws Exception{		
- 		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd"); // Format of the input query date values. TODO: add time?
  		// TODO: check date format of the historic data service
 
  		// Get conditions
- 		String fromDate = "2017-01-01"; // Default value. TODO: remove unused query parameters (Dates should be optional parameters)
-// 		String toDate = dateFormat.format(new Date()).toString(); // Default value
- 		for(String condition : conditions){
- 			String[] x = condition.split(" ");
- 			if(x[0].equalsIgnoreCase("date")){
- 				// Get start date
- 				if(x[1].contains(">")){
- 					fromDate = x[2];
- 				}else if(x[1].contains("=")){
- 					fromDate = x[2];
- 				}
- 			}
- 		}			
+ 		String fromDate = null;
+ 		if(conditions!=null){
+ 			for(String condition : conditions){
+ 	 			String[] x = condition.split(" ");
+ 	 			if(x[0].equalsIgnoreCase("date")){
+ 	 				// Get start date
+ 	 				if(x[1].contains(">")){
+ 	 					fromDate = x[2];
+ 	 				}else if(x[1].contains("=")){
+ 	 					fromDate = x[2];
+ 	 				}
+ 	 			}
+ 	 		}	
+ 		}		
  		return fromDate;
  	}
  	
  	String getEndDate() throws Exception{		
- 		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd"); // Format of the input query date values. TODO: add time?
  		// TODO: check date format of the historic data service
 
  		// Get conditions
- 		String toDate = dateFormat.format(new Date()).toString(); // Default value
- 		for(String condition : conditions){
- 			String[] x = condition.split(" ");
- 			if(x[0].equalsIgnoreCase("date")){
- 				// Get start and end dates
- 				if (x[1].contains("<")){
- 					toDate = x[2];
- 				}else if(x[1].contains("=")){
- 					toDate = x[2];
- 				}
- 			}	
+ 		String toDate = null;
+ 		if(conditions != null){
+ 			for(String condition : conditions){
+ 	 			String[] x = condition.split(" ");
+ 	 			if(x[0].equalsIgnoreCase("date")){
+ 	 				// Get start and end dates
+ 	 				if (x[1].contains("<")){
+ 	 					toDate = x[2];
+ 	 				}else if(x[1].contains("=")){
+ 	 					toDate = x[2];
+ 	 				}
+ 	 			}	
+ 	 		}
  		}
  		return toDate;
  	}

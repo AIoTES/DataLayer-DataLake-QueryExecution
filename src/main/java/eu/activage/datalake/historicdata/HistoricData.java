@@ -1,13 +1,11 @@
 package eu.activage.datalake.historicdata;
 
-
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLEncoder;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Base64;
 import java.util.Date;
@@ -27,6 +25,7 @@ import org.slf4j.LoggerFactory;
 import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
@@ -42,6 +41,7 @@ public class HistoricData {
 	 * */
 	
     private final Logger logger = LoggerFactory.getLogger(HistoricData.class);
+    private final String IDS_COLUMN = "observation";
     
     TranslationManager manager;
     DatabaseManager dbManager;
@@ -51,16 +51,16 @@ public class HistoricData {
     	dbManager = new DatabaseManager();
     }
       
-    public String getData(String platform, String deviceId, String deviceType, String fromDate, String toDate) throws Exception{
+    public JsonArray getData(String platform, String deviceId, String deviceType, String fromDate, String toDate) throws Exception{
     	/*
          * Create and execute call to webservice
          * */
-		String response = "";
+		JsonArray response = null;
 		
 		logger.info("Retrieving historic data from platform: " + platform);
 		
 		if(dbManager.isIndependentDataStorage(platform)){
-			String query = createIdsQuery(platform, deviceId, fromDate, toDate);
+			String query = createIdsQuery(deviceType, deviceId, fromDate, toDate); // Table = deviceType
 			response = getFromIds(platform, deviceType, query); // Table = deviceType
 		}else{
 			response = getFromPlatform(platform, deviceId, deviceType, fromDate, toDate);
@@ -84,9 +84,9 @@ public class HistoricData {
     	return response;
     }
     
-    public String getFromPlatform(String id, String deviceId, String deviceType, String dateFrom, String dateTo) throws Exception{
+    public JsonArray getFromPlatform(String id, String deviceId, String deviceType, String dateFrom, String dateTo) throws Exception{
     	// Call webservice and get data in the platform's format
-    	String result = null;
+    	JsonArray result = null;
     	JsonParser parser = new JsonParser();
     	
     	// URL of the webservice
@@ -125,14 +125,14 @@ public class HistoricData {
  					   else translatedData = observation;
  				   }
  				   
- 				   output.add(translatedData);
+ 				   output.add(parser.parse(translatedData).getAsJsonObject());
  			   }
  			  logger.info("Success");
- 			   result = output.toString();   
+ 			   result = output;   
  		   }else{
  			   // Return data in universAAL format
  			   logger.info("Sending response without translation...");
- 			   result = resultRaw;
+ 			   result = parser.parse(resultRaw).getAsJsonArray();
  		   }
  	   }     
     	
@@ -244,13 +244,13 @@ public class HistoricData {
  	   return resultRaw;
     }
     
-   public String getFromIds(String db, String table, String query) throws Exception{
+   public JsonArray getFromIds(String db, String table, String query) throws Exception{
     	/*
     	 * Get data from the Independent Data Storage
     	 * 
     	 * */
 		// The db name in the Independent Data Storage is used as identifier in the DB registry
-		String response = "";
+		JsonArray response = null;
 		JsonObject body = new JsonObject();
 		body.addProperty("db", db);
 		body.addProperty("table", table);
@@ -272,7 +272,14 @@ public class HistoricData {
 		 logger.info("Response code: " + httpResponse.getStatusLine().getStatusCode());
 		 if(responseCode==200){
 			 if(responseEntity!=null) {
-				 response = EntityUtils.toString(responseEntity);
+				 JsonParser parser = new JsonParser();
+				 String data = EntityUtils.toString(responseEntity);
+				 JsonArray array = parser.parse(data).getAsJsonArray();
+				 response = new JsonArray();
+				 for(JsonElement observation:array){
+					 String meas = observation.getAsJsonObject().get(IDS_COLUMN).getAsString();
+					 response.add(parser.parse(meas).getAsJsonObject());
+				 }
 			 }
 		 }else{
 				throw new Exception("Could not retrieve data. Response code received from Independent Data Storage: " + responseCode);
@@ -284,10 +291,10 @@ public class HistoricData {
 	   /*
 	    * Construct query for Independent Data Storage
 	    * */
-	   // TODO: ADD deviceType to query?
 	   
 	   String q = "SELECT * ";
-		q = q + "FROM \"" + table + "\"";
+//	   String q = "SELECT " + IDS_COLUMN;
+		q = q + " FROM \"" + table + "\"";
 	   // WHERE
 		if(deviceId!=null || fromDate!=null || toDate!=null){ // TODO: check WHERE components
 			q = q + " WHERE ";
@@ -297,7 +304,7 @@ public class HistoricData {
 			if((fromDate != null || toDate != null) && deviceId != null) q = q + " AND ";
 			if(deviceId != null) q = q + "device = '" +  deviceId + "'";	// String value
 		}
-		
+		logger.info(q); // Debug
 	   return q;
    }
    
@@ -315,7 +322,7 @@ public class HistoricData {
   		   Date endDate = f.parse(dateTo);
   		   f.applyPattern("yyyy-MM-dd'T'HH:mm:ss.SSS"); // Example: 2018-02-01T00:00:00.000Z
   		   
-  		   String query = createIdsQuery(db, deviceId, startDate.toString(), endDate.toString());
+  		   String query = createIdsQuery(deviceType, deviceId, startDate.toString(), endDate.toString()); // DB = deviceType
   		   String encodedQuery = URLEncoder.encode(query, "UTF-8");
   		   
   		   URIBuilder builder = new URIBuilder(url + "independentStorage/select");

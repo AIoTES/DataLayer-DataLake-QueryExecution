@@ -67,7 +67,7 @@ public class QueryExecution {
     				String result = client.execute(query);
     		
     				// Format response
-    				JsonElement dbResponse = parser.parse(result);
+    				JsonElement dbResponse = parser.parse(result).getAsJsonArray();
     				responseBody.add("records", dbResponse);
     			
     			} catch (Exception e) {

@@ -4,7 +4,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.gson.JsonArray;
-import com.google.gson.JsonParser;
 
 import eu.activage.datalake.historicdata.DatabaseManager;
 import eu.activage.datalake.historicdata.HistoricData;
@@ -72,13 +71,12 @@ class DataLakeClient {
 		
 		for(String dbId:dbIds){
 			// TODO: integrate indexing service
-			JsonParser parser = new JsonParser();
 			for (int i = 0; i < columns.length; i++){
-				String data;
+				JsonArray data;
 				// USE ONLY DEVICE TYPE OR DEVICE ID. TODO: CHECK IF WE CAN USE BOTH PARAMETERS IN THE SAME QUERY AND HOW
 				if (q.getDeviceTypes() != null) data = historic.getData(dbId, null, columns[i], q.getStartDate(), q.getEndDate());
 				else data = historic.getData(dbId, columns[i], null, q.getStartDate(), q.getEndDate());
-				res.addAll(parser.parse(data).getAsJsonArray());
+				res.addAll(data);
 			}
 		}
 		response = res.toString();				
