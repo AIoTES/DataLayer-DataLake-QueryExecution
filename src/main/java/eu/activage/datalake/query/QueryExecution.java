@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
+import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -56,12 +57,13 @@ public class QueryExecution {
     				// Extract query
     				JsonParser parser = new JsonParser();
     				JsonObject reqBody = (JsonObject) parser.parse(request.body());
-    				String sql = reqBody.get("query").getAsString();
-    			
-    				logger.info("Received query: " + sql);
-    			
     				// Parse query
-    				Query query = new Query(sql);
+    				Query query = new Gson().fromJson(reqBody, Query.class);
+    				
+//    				String sql = reqBody.get("query").getAsString();
+//    				logger.info("Received query: " + sql);    			
+//    				// Parse query
+//    				Query query = new Query(sql);
     				    				
     				// Execute query   		
     				String result = client.execute(query);
@@ -89,12 +91,13 @@ public class QueryExecution {
     				// Extract query
     				JsonParser parser = new JsonParser();
     				JsonObject reqBody = (JsonObject) parser.parse(request.body());
-    				String sql = reqBody.get("query").getAsString();
-    			
-    				logger.info("Received query: " + sql);
-    			
     				// Parse query
-    				Query query = new Query(sql);
+    				Query query = new Gson().fromJson(reqBody, Query.class);
+    				
+//    				String sql = reqBody.get("query").getAsString();
+//    				logger.info("Received query: " + sql);
+//    				// Parse query
+//    				Query query = new Query(sql);
     				    				
     				// Execute query   		
     				result = client.translate(query);

@@ -36,8 +36,8 @@ class DataLakeClient {
 			
 			// TODO: integrate indexing service
 			
-			// Analyze query and identify data sources (by the index) Table = index
-			// In the current version, indices represent platforms (for the historic data module) and columns represent devices (or magnitudes?)
+			// Analyze query and identify data sources (by the index)
+			// Using platform or DS as index
 			
 			for (int i = 0; i < columns.length; i++){
 				String fromDate = q.getStartDate();

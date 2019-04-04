@@ -165,10 +165,11 @@ public class HistoricData {
   	   if(url!=null && !url.isEmpty()){
   		   // TODO: define standard interface
   		   
-  		   SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd"); // Format of the input query date values. No time information included
+//  		   SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd"); // Format of the input query date values. No time information included
+  		   SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS"); // Format of the input query date values. No time information included
   		   Date startDate = f.parse(dateFrom);
   		   Date endDate = f.parse(dateTo);
-  		   f.applyPattern("yyyy-MM-dd'T'HH:mm:ss.SSS"); // Example: 2018-02-01T00:00:00.000Z
+//  		   f.applyPattern("yyyy-MM-dd'T'HH:mm:ss.SSS"); // Example: 2018-02-01T00:00:00.000Z
   		   
   		   URIBuilder builder = new URIBuilder(url);
   		   if(deviceType!=null) builder.addParameter("deviceType", deviceType);
@@ -296,7 +297,7 @@ public class HistoricData {
 //	   String q = "SELECT " + IDS_COLUMN;
 		q = q + " FROM \"" + table + "\"";
 	   // WHERE
-		if(deviceId!=null || fromDate!=null || toDate!=null){ // TODO: check WHERE components
+		if(deviceId!=null || fromDate!=null || toDate!=null){
 			q = q + " WHERE ";
 			if(fromDate != null) q = q + "time >= '" +  fromDate + "'"; // String value
 			if(fromDate != null && toDate !=null) q = q + " AND ";
@@ -317,10 +318,11 @@ public class HistoricData {
   		   // TODO: define standard interface
   		   if(!url.endsWith("/")) url = url + "/"; // Just in case
 		   
-  		   SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd"); // Format of the input query date values. No time information included
+//  		   SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd");
+  		   SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS"); // Format of the input query date values. TODO: check and define input format
   		   Date startDate = f.parse(dateFrom);
   		   Date endDate = f.parse(dateTo);
-  		   f.applyPattern("yyyy-MM-dd'T'HH:mm:ss.SSS"); // Example: 2018-02-01T00:00:00.000Z
+//  		   f.applyPattern("yyyy-MM-dd'T'HH:mm:ss.SSS"); // Example: 2018-02-01T00:00:00.000Z
   		   
   		   String query = createIdsQuery(deviceType, deviceId, startDate.toString(), endDate.toString()); // DB = deviceType
   		   String encodedQuery = URLEncoder.encode(query, "UTF-8");
