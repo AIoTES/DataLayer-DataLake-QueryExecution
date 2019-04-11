@@ -29,8 +29,12 @@ public class QueryExecution {
     }
     
     public void start() throws Exception {
-    	
+    	    	
     	spark = Service.ignite().port(port);
+    	// Swagger UI
+    	spark.staticFileLocation("/public");
+    	
+    	spark.get("/swagger",(req, res) -> {res.redirect("index.html"); return null;});
     	
  //   	spark.path("/api", () -> { //  /dataIntegrationEngine
     	

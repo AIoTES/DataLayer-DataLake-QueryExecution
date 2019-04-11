@@ -1,0 +1,205 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "description": "Data Integration Engine",
+    "version": "0.0.1",
+    "title": "Data Integration Engine REST API",
+    "termsOfService": "http://www.activageproject.eu/",
+    "contact": {
+      "name": "Activage contact",
+      "url": "http://www.activageproject.eu/",
+      "email": "coordinator@activageproject.eu"
+    },
+    "license": {
+      "name": "Apache 2.0",
+      "url": "http://www.apache.org/licenses/LICENSE-2.0"
+    }
+  },
+  "basePath": "/",
+  "schemes": [
+    "http",
+    "https"
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/getSchema": {
+      "post": {
+        "summary": "Get Schema",
+        "description": "",
+        "operationId": "getSchema",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/GetSchemaInput"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success.",
+            "schema": {
+              "$ref": "#/definitions/Schema"
+            }
+          },
+          "500": {
+            "description": "Server error."
+          }
+        }
+      }
+    },
+    "/query": {
+      "post": {
+        "summary": "Register (start managing) devices",
+        "description": "",
+        "operationId": "query",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/QueryInput"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success.",
+            "schema": {
+              "$ref": "#/definitions/QueryResponse"
+            }
+          },
+          "400": {
+            "description": "Invalid request."
+          },
+          "500": {
+            "description": "Server error."
+          }
+        }
+      }
+    },
+    "/querytranslation": {
+      "post": {
+        "summary": "Subscribe to specified devices",
+        "description": "",
+        "operationId": "queryTranslation",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/QueryInput"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success.",
+            "schema": {
+              "$ref": "#/definitions/QueryTranslationResponse"
+            }
+          },
+          "400": {
+            "description": "Invalid request."
+          },
+          "500": {
+            "description": "Server Error."
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "QueryResponse": {
+      "type": "object",
+      "properties": {
+        "records": {
+          "type": "object"
+        }
+      }
+    },
+    "QueryTranslationResponse": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "Schema": {
+      "type": "object"
+    },
+    "GetSchemaInput": {
+      "type": "object",
+      "properties": {
+        "entity": {
+          "type": "string"
+        }
+      }
+    },
+    "QueryInput": {
+      "type": "object",
+      "properties": {
+        "deviceType": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "deviceID": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "startDate": {
+          "type": "string"
+        },
+        "endDate": {
+          "type": "string"
+        },
+        "platform": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "ds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  "externalDocs": {
+    "description": "Project documents",
+    "url": "http://www.activageproject.eu/communication-room/public-documents/"
+  }
+}
