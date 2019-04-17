@@ -12,12 +12,20 @@ class DataLakeClient {
 	
 	// TODO: integrate with indexing service
 	DatabaseManager dbManager;
-	HistoricData historic = new HistoricData();
+	HistoricData historic;
 	
 	private final Logger logger = LoggerFactory.getLogger(DataLakeClient.class);
 	
 	DataLakeClient(){
+		// Use mock service registry
 		dbManager = new DatabaseManager();
+		historic = new HistoricData();
+	}
+	
+	DataLakeClient(String url){
+		// Use service registry prototype
+		dbManager = new DatabaseManager(url);
+		historic = new HistoricData(url);
 	}
 	
 	// Translate query into calls to webservices

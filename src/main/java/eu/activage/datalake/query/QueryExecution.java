@@ -18,14 +18,19 @@ import spark.Service;
 
 public class QueryExecution {
 	private int port;
+//	private String serviceRegistryUrl;
     private Service spark;
     private final Logger logger = LoggerFactory.getLogger(QueryExecution.class);
     private DataLakeClient client;
     
     
-    public QueryExecution(int port) {
+    public QueryExecution(int port, String url) {
         this.port = port;
-        client = new DataLakeClient();
+        if(url!=null){
+        	if (!url.endsWith("/")) url = url + "/";
+//        	this.serviceRegistryUrl = url;
+        	client = new DataLakeClient(url);
+        } else client = new DataLakeClient();
     }
     
     public void start() throws Exception {
@@ -127,12 +132,15 @@ public class QueryExecution {
 
     public static void main(String[] args) throws Exception {
     	int port = 4570;
+    	String url = null;
     	if (args.length > 0){
-    		port = Integer.parseInt(args[0]);
+    		url = args[0];
+    		if (args.length > 1){
+    			port = Integer.parseInt(args[1]);
+    		}
     	}
-    	new QueryExecution(port).start();
+    	new QueryExecution(port, url).start();
     }
     
     
-
 }

@@ -46,7 +46,14 @@ public class HistoricData {
     TranslationManager manager;
     DatabaseManager dbManager;
     
+    public HistoricData(String url){
+    	// Use service registry prototype
+    	manager = new TranslationManager(url);
+    	dbManager = new DatabaseManager(url);
+    }
+    
     public HistoricData(){
+    	// Use mock service registry
     	manager = new TranslationManager();
     	dbManager = new DatabaseManager();
     }
@@ -148,19 +155,19 @@ public class HistoricData {
   	   // Device id should not be a numeric value. TODO: define standard interface for webservices
   	   // Temporary fix
   	   // 0 for motion sensor, 1 for door sensor and 2 for panic buttons
-  	   switch(deviceType){
-  	    case "motion":
-  	    	deviceType="0";
-  	    	break;
-  	    case "door":
-  	    	deviceType="1";
-  	    	break;
-  	    case "button":
-  	    	deviceType="2";
-  	    	break;
-  	    default:
-  	    	logger.info("Unrecognized device type");
-  	   }
+//  	   switch(deviceType){
+//  	    case "motion":
+//  	    	deviceType="0";
+//  	    	break;
+//  	    case "door":
+//  	    	deviceType="1";
+//  	    	break;
+//  	    case "button":
+//  	    	deviceType="2";
+//  	    	break;
+//  	    default:
+//  	    	logger.info("Unrecognized device type");
+//  	   }
   	   
   	   if(url!=null && !url.isEmpty()){
   		   // TODO: define standard interface

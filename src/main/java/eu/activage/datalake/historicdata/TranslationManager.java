@@ -8,6 +8,7 @@ import java.util.Properties;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
@@ -52,10 +53,22 @@ public class TranslationManager {
 	
 	private String ipsmUrl; // http://localhost:8888/
 	private String platformId;
+	String serviceRegistryUrl;
+	final String DB = "services";
+	final String IPSM_TYPE = "semantic-translator";
+	
+	public TranslationManager(String url){
+		// Get IPSM URL from registry
+		// TODO: get syntactic translation web services URLs from the registry
+		serviceRegistryUrl = url + DB;
+		ipsmUrl = null;
+		platformId = null;
+	}
 	
 	public TranslationManager(){
 		Properties prop = new Properties();
 		InputStream input = null;
+		serviceRegistryUrl = null;
 				
 		try {
 			input = getClass().getClassLoader().getResourceAsStream("config.properties");
@@ -156,10 +169,11 @@ public class TranslationManager {
 	public String semanticTranslation(String data, String alignName, String alignVersion) throws Exception{
 		   String result = data;
 		   HttpClient httpClient = HttpClientBuilder.create().build();
-		   if(ipsmUrl!=null && !ipsmUrl.equals("")){
+		   String url = getIpsmUrl();
+		   if(url!=null && !url.equals("")){
 			   // Call IPSM for semantic translation
 //			   logger.info("Sending data to IPSM...");
-			   HttpPost ipsmPost = new HttpPost(ipsmUrl + "translation");
+			   HttpPost ipsmPost = new HttpPost(url + "translation");
 			   JsonObject translationData = new JsonObject();
 			   JsonObject alignId = new JsonObject(); 
 			   alignId.addProperty("name", alignName);
@@ -189,5 +203,34 @@ public class TranslationManager {
 		   }
 		   return result;
 	   }
+	
+	private String getIpsmUrl() throws Exception{
+		String url = null;
+		
+		if(serviceRegistryUrl!=null){
+			// Use JSON server
+			HttpClient httpClient = HttpClientBuilder.create().build();
+			HttpGet httpGet = new HttpGet(serviceRegistryUrl + "?type=" + IPSM_TYPE);
+			HttpResponse httpResponse = httpClient.execute(httpGet);
+			int responseCode = httpResponse.getStatusLine().getStatusCode();
+			   if(responseCode==200){
+				   HttpEntity responseEntity = httpResponse.getEntity();
+				   if(responseEntity!=null) {
+					   JsonParser parser = new JsonParser();
+					   JsonObject target = parser.parse(EntityUtils.toString(responseEntity)).getAsJsonArray().get(0).getAsJsonObject();
+					   url = target.get("url").getAsString();
+				   }else {
+					   logger.warn("No semantic translation service found.");
+					   url = null;
+				   }
+			   }else{
+				   throw new Exception("Response code received from Registry: " + responseCode);
+			   }
+		}else{
+			url = ipsmUrl;
+		}
+		
+		return url;
+	}
 	
 }
