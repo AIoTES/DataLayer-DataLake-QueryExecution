@@ -209,10 +209,10 @@ public class HistoricData {
 // 		   System.out.println("Authentication header: " + authHeader);
  		   
  		   // FIXME: connection issues from UPV if a proxy is not used
- 		  System.setProperty("http.proxyHost", "158.42.247.100");
-		  System.setProperty("http.proxyPort", "8080");
-		  System.setProperty("https.proxyHost",  "158.42.247.100");
-		  System.setProperty("https.proxyPort", "8080");
+// 		  System.setProperty("http.proxyHost", "158.42.247.100");
+//		  System.setProperty("http.proxyPort", "8080");
+//		  System.setProperty("https.proxyHost",  "158.42.247.100");
+//		  System.setProperty("https.proxyPort", "8080");
  		   
 // 		  System.out.println(uri.toString()); 
  		   
