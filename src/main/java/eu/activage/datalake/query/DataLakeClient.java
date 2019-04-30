@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 
 import eu.activage.datalake.historicdata.DatabaseManager;
 import eu.activage.datalake.historicdata.HistoricData;
@@ -50,10 +51,10 @@ class DataLakeClient {
 			for (int i = 0; i < columns.length; i++){
 				String fromDate = q.getStartDate();
 				String toDate = q.getEndDate();
-				String result;
+				JsonObject result;
 				// USE ONLY DEVICE TYPE OR DEVICE ID. TODO: CHECK IF WE CAN USE BOTH PARAMETERS IN THE SAME QUERY AND HOW
-				if (q.getDeviceTypes() == null) result = historic.getURL(dbId, columns[i], null, fromDate, toDate).toString();
-				else result = historic.getURL(dbId, null, columns[i], fromDate, toDate).toString();
+				if (q.getDeviceTypes() == null) result = historic.getWebserviceCall(dbId, columns[i], null, fromDate, toDate);
+				else result = historic.getWebserviceCall(dbId, null, columns[i], fromDate, toDate);
 				apiCalls.add(result);
 			}
 			

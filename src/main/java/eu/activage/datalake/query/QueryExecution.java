@@ -18,7 +18,6 @@ import spark.Service;
 
 public class QueryExecution {
 	private int port;
-//	private String serviceRegistryUrl;
     private Service spark;
     private final Logger logger = LoggerFactory.getLogger(QueryExecution.class);
     private DataLakeClient client;
@@ -28,7 +27,6 @@ public class QueryExecution {
         this.port = port;
         if(url!=null){
         	if (!url.endsWith("/")) url = url + "/";
-//        	this.serviceRegistryUrl = url;
         	client = new DataLakeClient(url);
         } else client = new DataLakeClient();
     }

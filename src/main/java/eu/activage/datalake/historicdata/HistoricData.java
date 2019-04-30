@@ -76,18 +76,34 @@ public class HistoricData {
 		return response;
 	}
     
-    public URI getURL(String platform, String deviceId, String deviceType, String fromDate, String toDate) throws Exception{
+    public JsonObject getWebserviceCall(String platform, String deviceId, String deviceType, String fromDate, String toDate) throws Exception{
     	/*
-    	 * Returns the complete URL to call the webservice using GET
+    	 * Returns the complete URL and headers to call the webservice using GET
     	 * */
-    	URI response = null;
+    	URI responseUri = null;
     	String url = dbManager.getUrl(platform);
     	
     	if(dbManager.isIndependentDataStorage(platform)){
-    		response = createIdsCall(url, platform, deviceId, deviceType, fromDate, toDate);
+    		responseUri = createIdsCall(url, platform, deviceId, deviceType, fromDate, toDate);
 		}else{
-			response = createUri(url, deviceId, deviceType, fromDate, toDate);
+			responseUri = createUri(url, deviceId, deviceType, fromDate, toDate);
 		}
+    	JsonObject response = new JsonObject();
+    	response.addProperty("url", responseUri.toString());
+    	JsonObject headers = new JsonObject();
+    	
+    	String user = dbManager.getUser(platform);
+    	String password = dbManager.getPassword(platform);
+    	
+    	if(user!=null && !user.equals("") && password!=null && !password.equals("")){
+    		String authString = user + ":" + password;
+    		byte[] authEncBytes = Base64.getEncoder().encode(authString.getBytes("UTF-8"));
+    		String authStringEnc = new String(authEncBytes);
+    		String authHeader = "Basic " + authStringEnc;
+    		headers.addProperty("Authentication", authHeader);
+    	}
+    	response.add("headers", headers);
+    	
     	return response;
     }
     
@@ -103,10 +119,13 @@ public class HistoricData {
     	String platformType = dbManager.getPlatformType(id);
     	String[] alignment = dbManager.getUptreamAlignment(id);
     	
+    	// Authentication
+    	String user = dbManager.getUser(id);
+    	String password = dbManager.getPassword(id);
     	
     	// Get historic data from the webservice
     	URI uri = createUri(url, deviceId, deviceType, dateFrom, dateTo);
-    	String resultRaw = callWebService(uri);
+    	String resultRaw = callWebService(uri, user, password);
     	    	
     	// Translation of each individual message
  	    if(!resultRaw.isEmpty()){
@@ -152,23 +171,6 @@ public class HistoricData {
   	   
   	   String authToken = "a7e46008-b5ab-449c-8777-e39c4b30ed49"; // TODO: get all parameter from api call or properties
   	   
-  	   // Device id should not be a numeric value. TODO: define standard interface for webservices
-  	   // Temporary fix
-  	   // 0 for motion sensor, 1 for door sensor and 2 for panic buttons
-//  	   switch(deviceType){
-//  	    case "motion":
-//  	    	deviceType="0";
-//  	    	break;
-//  	    case "door":
-//  	    	deviceType="1";
-//  	    	break;
-//  	    case "button":
-//  	    	deviceType="2";
-//  	    	break;
-//  	    default:
-//  	    	logger.info("Unrecognized device type");
-//  	   }
-  	   
   	   if(url!=null && !url.isEmpty()){
   		   // TODO: define standard interface
   		   
@@ -190,12 +192,10 @@ public class HistoricData {
   	   return uri;
     }
     
-    String callWebService(URI uri) throws Exception{
+    String callWebService(URI uri, String name, String password) throws Exception{
     	// Test with DS Greece webservice
  	   String resultRaw = "";
 // 	   String authToken = "a7e46008-b5ab-449c-8777-e39c4b30ed49"; // TODO: get all parameter from api call or properties
- 	   String name = "admin";
- 	   String password = "P@ssw0rd";
  	    	   
  	   if(uri!=null){
  		   // Call webservice and get data in the platform's format
@@ -206,7 +206,6 @@ public class HistoricData {
  		   byte[] authEncBytes = Base64.getEncoder().encode(authString.getBytes("UTF-8"));
  		   String authStringEnc = new String(authEncBytes);
  		   String authHeader = "Basic " + authStringEnc;
-// 		   System.out.println("Authentication header: " + authHeader);
  		   
  		   // FIXME: connection issues from UPV if a proxy is not used
 // 		  System.setProperty("http.proxyHost", "158.42.247.100");
@@ -275,7 +274,6 @@ public class HistoricData {
 		 httpPost.setEntity(translationEntity);
 		 HttpResponse httpResponse = httpClient.execute(httpPost);
 		 HttpEntity responseEntity = httpResponse.getEntity();
-		 // Do something with the response code?
 		 int responseCode = httpResponse.getStatusLine().getStatusCode();
 		 logger.info("Response code: " + httpResponse.getStatusLine().getStatusCode());
 		 if(responseCode==200){
@@ -322,7 +320,6 @@ public class HistoricData {
 	    * */
 	   URI uri = null;
 	   if(url!=null && !url.isEmpty()){
-  		   // TODO: define standard interface
   		   if(!url.endsWith("/")) url = url + "/"; // Just in case
 		   
 //  		   SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd");

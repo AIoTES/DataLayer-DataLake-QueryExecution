@@ -128,4 +128,18 @@ public class DatabaseManager {
 		return alignment;
 	}
 	
+	public String getUser(String id) throws Exception{
+		String response = null;
+		JsonObject db = getDb(id);
+		if(db != null) response = db.get("user").getAsString();	
+		return response;		
+	}
+	
+	public String getPassword(String id) throws Exception{
+		String response = null;
+		JsonObject db = getDb(id);
+		if(db != null) response = db.get("password").getAsString();	
+		return response;		
+	}
+	
 }
