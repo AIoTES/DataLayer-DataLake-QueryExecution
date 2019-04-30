@@ -27,7 +27,10 @@ Deploy JSON server on Docker:
 Example JSON database file: db.json
 
 
-Add **historic data webservices** (including Independent Data Storage) under **"historic-webservices"**. The id of the Independent Data Storage must be the name of the DB where the the historic data are stored and the type must be "common". For other historic data web services, use type="platform". The attribute "platformType" defines the syntactic translation of the data (supported values: "http://inter-iot.eu/UniversAAL", "http://inter-iot.eu/FIWARE" and "http://inter-iot.eu/sofia2"). The Alignment attributes define the semantic translation of the data.
-
+Add **historic data webservices** (including Independent Data Storage) under **"services"**. The id of the Independent Data Storage must be the name of the DB where the the historic data are stored and the type must be "independent-storage". For other historic data web services, use type="platform-historic". The attribute "platforms" contains the identifiers of the IoT platfoms associated with a service. In the case of historic data webservices, platform data is used to determine the syntactic and semantic translation of the retrieved data.
 
 Add **translation web services** under **"services"**. For the IPSM, use type="semantic-translator".
+
+Add platform data under **"platforms"**. The attribute "platformType" defines the syntactic translation of the data (supported values: "http://inter-iot.eu/UniversAAL", "http://inter-iot.eu/FIWARE" and "http://inter-iot.eu/sofia2"). The Alignment attributes define the semantic translation of the data.
+
+
