@@ -89,8 +89,9 @@ public class TranslationManager {
 		platformId = "";
 	}
 	
-	void setPlatformId(String id){
+	void setPlatformId(String id) throws Exception{
 		platformId = id;
+		ipsmUrl = getIpsmUrl();
 	}
 	
 	public String syntacticTranslation(String data, String type) throws Exception{
@@ -169,11 +170,10 @@ public class TranslationManager {
 	public String semanticTranslation(String data, String alignName, String alignVersion) throws Exception{
 		   String result = data;
 		   HttpClient httpClient = HttpClientBuilder.create().build();
-		   String url = getIpsmUrl();
-		   if(url!=null && !url.equals("")){
+		   if(ipsmUrl!=null && !ipsmUrl.equals("")){
 			   // Call IPSM for semantic translation
 //			   logger.info("Sending data to IPSM...");
-			   HttpPost ipsmPost = new HttpPost(url + "translation");
+			   HttpPost ipsmPost = new HttpPost(ipsmUrl + "translation");
 			   JsonObject translationData = new JsonObject();
 			   JsonObject alignId = new JsonObject(); 
 			   alignId.addProperty("name", alignName);
@@ -221,7 +221,7 @@ public class TranslationManager {
 					   url = target.get("url").getAsString();
 				   }else {
 					   logger.warn("No semantic translation service found.");
-					   url = null;
+					   url = ipsmUrl; // null
 				   }
 			   }else{
 				   throw new Exception("Response code received from Registry: " + responseCode);
