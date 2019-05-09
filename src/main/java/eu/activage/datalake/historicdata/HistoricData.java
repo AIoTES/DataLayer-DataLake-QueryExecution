@@ -167,9 +167,7 @@ public class HistoricData {
     
     URI createUri(String url, String deviceId, String deviceType, String dateFrom, String dateTo) throws Exception{
     	URI uri = null;
-    	// Test with DS Greece webservice
-  	   
-  	   String authToken = "a7e46008-b5ab-449c-8777-e39c4b30ed49"; // TODO: get all parameter from api call or properties
+    	// Create URL for the web service call
   	   
   	   if(url!=null && !url.isEmpty()){
   		   // TODO: define standard interface
@@ -185,7 +183,6 @@ public class HistoricData {
   		   if(deviceId!=null) builder.addParameter("deviceId", deviceId);
   		   if(startDate!=null) builder.addParameter("startDate", f.format(startDate) + "Z");
   		   if(endDate!=null) builder.addParameter("endDate", f.format(endDate) + "Z");
-  		   builder.addParameter("tenantAuthToken", authToken); // TODO: remove this parameter
   		   uri = builder.build();
   	   }
   	   
@@ -193,27 +190,17 @@ public class HistoricData {
     }
     
     String callWebService(URI uri, String name, String password) throws Exception{
-    	// Test with DS Greece webservice
+    	// Retrieve data from web service
  	   String resultRaw = "";
-// 	   String authToken = "a7e46008-b5ab-449c-8777-e39c4b30ed49"; // TODO: get all parameter from api call or properties
  	    	   
  	   if(uri!=null){
- 		   // Call webservice and get data in the platform's format
- 		   // TODO: define standard interface
+ 		   // Call web service and get data in the platform's format
  		   
  		   // Basic authentication
  		   String authString = name + ":" + password;
  		   byte[] authEncBytes = Base64.getEncoder().encode(authString.getBytes("UTF-8"));
  		   String authStringEnc = new String(authEncBytes);
  		   String authHeader = "Basic " + authStringEnc;
- 		   
- 		   // FIXME: connection issues from UPV if a proxy is not used
-// 		  System.setProperty("http.proxyHost", "158.42.247.100");
-//		  System.setProperty("http.proxyPort", "8080");
-//		  System.setProperty("https.proxyHost",  "158.42.247.100");
-//		  System.setProperty("https.proxyPort", "8080");
- 		   
-// 		  System.out.println(uri.toString()); 
  		   
  		  HttpURLConnection con = (HttpURLConnection) uri.toURL().openConnection();
 
@@ -244,6 +231,7 @@ public class HistoricData {
  		 }
  			
  	   }else{
+ 		   // TODO: remove test code and add exception
  		// Get test data from a file
  		   URL test = Resources.getResource("uaal-data.txt");
  	       resultRaw = Resources.toString(test, Charsets.UTF_8);

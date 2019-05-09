@@ -66,11 +66,6 @@ public class QueryExecution {
     				JsonObject reqBody = (JsonObject) parser.parse(request.body());
     				// Parse query
     				Query query = new Gson().fromJson(reqBody, Query.class);
-    				
-//    				String sql = reqBody.get("query").getAsString();
-//    				logger.info("Received query: " + sql);    			
-//    				// Parse query
-//    				Query query = new Query(sql);
     				    				
     				// Execute query   		
     				String result = client.execute(query);
@@ -90,8 +85,7 @@ public class QueryExecution {
    		 		return responseBody.toString();
     		});
     		
-    		spark.post("/querytranslation", (request, response) -> {
-//    			JsonObject responseBody = new JsonObject();  
+    		spark.post("/querytranslation", (request, response) -> { 
     			JsonArray result;
     			    			
     			try {
@@ -100,11 +94,6 @@ public class QueryExecution {
     				JsonObject reqBody = (JsonObject) parser.parse(request.body());
     				// Parse query
     				Query query = new Gson().fromJson(reqBody, Query.class);
-    				
-//    				String sql = reqBody.get("query").getAsString();
-//    				logger.info("Received query: " + sql);
-//    				// Parse query
-//    				Query query = new Query(sql);
     				    				
     				// Execute query   		
     				result = client.translate(query);

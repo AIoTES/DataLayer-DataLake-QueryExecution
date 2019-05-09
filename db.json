@@ -29,7 +29,7 @@
 	{
         "id": "uaal",
         "type": "platform-historic",
-        "url": "http://160.40.50.78:1080/api/assignments/measurements/all",
+        "url": "http://160.40.50.78:1080/api/assignments/measurements/all?tenantAuthToken=a7e46008-b5ab-449c-8777-e39c4b30ed49",
         "platforms": [
 			"http://inter-iot.eu/platforms/uaal-greece"
 		],

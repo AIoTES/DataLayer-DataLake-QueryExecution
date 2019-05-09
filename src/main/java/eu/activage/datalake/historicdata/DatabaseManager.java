@@ -28,7 +28,7 @@ public class DatabaseManager {
 	final String PLATFORMS = "platforms";
 	
 	// TODO: USE A REAL DATABASE
-	// TODO: ADD MANAGEMENT FUNCTIONS (REGISTER, UNREGISTER...)
+	// TODO: ADD MANAGEMENT FUNCTIONS (REGISTER, UNREGISTER...)?
 	
 	public DatabaseManager(String url){
 		// Use prototype service registry (JSON server)

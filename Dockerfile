@@ -16,4 +16,4 @@ ADD src /code/src
 RUN ["mvn", "clean", "compile", "assembly:single"]
 
 EXPOSE 4570
-CMD ["/usr/lib/jvm/java-8-openjdk-amd64/bin/java", "-jar", "/code/target/QueryExecution-0.0.1-SNAPSHOT-jar-with-dependencies.jar"]
+ENTRYPOINT ["/usr/lib/jvm/java-8-openjdk-amd64/bin/java", "-jar", "/code/target/QueryExecution-0.0.1-SNAPSHOT-jar-with-dependencies.jar"]

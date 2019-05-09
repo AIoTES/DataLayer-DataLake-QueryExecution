@@ -11,7 +11,7 @@
 		"downstreamAlignmentVersion": ""
 	},
 	{
-		"id": "prueba",
+		"id": "ids",
 		"type": "common",
 		"url": "http://localhost:4567/",
 		"platformId": "",
