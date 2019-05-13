@@ -4,7 +4,6 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URI;
-import java.net.URL;
 import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.Base64;
@@ -22,8 +21,6 @@ import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Charsets;
-import com.google.common.io.Resources;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -35,8 +32,8 @@ public class HistoricData {
 	/*
 	 * This class emulates the historic data service of the (future) SIL v2
 	 * 
-	 * The method getFromPlatform identifies the proper webservice, gets the data and calls the translation services
-	 * The information needed to locate the webservices and perform the translations is stored in a database (will need management operations)
+	 * The method getFromPlatform identifies the proper web service, gets the data and calls the translation services
+	 * The information needed to locate the web services and perform the translations is stored in a database (will need management operations)
 	 * 
 	 * */
 	
@@ -60,7 +57,7 @@ public class HistoricData {
       
     public JsonArray getData(String platform, String deviceId, String deviceType, String fromDate, String toDate) throws Exception{
     	/*
-         * Create and execute call to webservice
+         * Create and execute call to web service
          * */
 		JsonArray response = null;
 		
@@ -78,7 +75,7 @@ public class HistoricData {
     
     public JsonObject getWebserviceCall(String platform, String deviceId, String deviceType, String fromDate, String toDate) throws Exception{
     	/*
-    	 * Returns the complete URL and headers to call the webservice using GET
+    	 * Returns the complete URL and headers to call the web service using GET
     	 * */
     	URI responseUri = null;
     	String url = dbManager.getUrl(platform);
@@ -108,7 +105,7 @@ public class HistoricData {
     }
     
     public JsonArray getFromPlatform(String id, String deviceId, String deviceType, String dateFrom, String dateTo) throws Exception{
-    	// Call webservice and get data in the platform's format
+    	// Call web service and get data in the platform's format
     	JsonArray result = null;
     	JsonParser parser = new JsonParser();
     	
@@ -231,10 +228,7 @@ public class HistoricData {
  		 }
  			
  	   }else{
- 		   // TODO: remove test code and add exception
- 		// Get test data from a file
- 		   URL test = Resources.getResource("uaal-data.txt");
- 	       resultRaw = Resources.toString(test, Charsets.UTF_8);
+ 		  throw new Exception("No web service found for the requested data");
  	   }
  	   return resultRaw;
     }

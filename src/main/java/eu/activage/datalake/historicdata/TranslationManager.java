@@ -59,7 +59,6 @@ public class TranslationManager {
 	
 	public TranslationManager(String url){
 		// Get IPSM URL from registry
-		// TODO: get syntactic translation web services URLs from the registry
 		serviceRegistryUrl = url + DB;
 		ipsmUrl = null;
 		platformId = null;
@@ -98,6 +97,7 @@ public class TranslationManager {
 		
 		String response;
 		// SELECT SYNTACTIC TRANSLATOR USING THE PLATFORM TYPE IDENTIFIER (SAME VALUE AS IN THE BRIDGE)
+		// TODO: get syntactic translation web services URLs from the registry
 		switch(type){
        	case " http://inter-iot.eu/FIWARE":
        		response = translateFromFiware(data);
@@ -172,7 +172,6 @@ public class TranslationManager {
 		   HttpClient httpClient = HttpClientBuilder.create().build();
 		   if(ipsmUrl!=null && !ipsmUrl.equals("")){
 			   // Call IPSM for semantic translation
-//			   logger.info("Sending data to IPSM...");
 			   HttpPost ipsmPost = new HttpPost(ipsmUrl + "translation");
 			   JsonObject translationData = new JsonObject();
 			   JsonObject alignId = new JsonObject(); 
@@ -186,13 +185,11 @@ public class TranslationManager {
 			   ipsmPost.setEntity(translationEntity);
 			   HttpResponse httpResponse = httpClient.execute(ipsmPost);
 			   int responseCode = httpResponse.getStatusLine().getStatusCode();
-//			   logger.info("Response code: " + httpResponse.getStatusLine().getStatusCode());
 			   if(responseCode==200){
 				   HttpEntity responseEntity = httpResponse.getEntity();
 				   if(responseEntity!=null) {
 					   JsonParser parser = new JsonParser();
 					   JsonObject responseBody = parser.parse(EntityUtils.toString(responseEntity)).getAsJsonObject();
-//					   logger.info("Message: " + responseBody.get("message").getAsString());
 					   result = responseBody.get("graphStr").getAsString();
 				   }
 			   }else{

@@ -116,6 +116,7 @@ public class DatabaseManager {
 	}
 	
 	public boolean isIndependentDataStorage(String id) throws Exception{
+		// check also if it's a historic data web service?
 		JsonObject db = getDb(id);
 		if(db != null){
 			String type = db.get("type").getAsString();
@@ -150,6 +151,7 @@ public class DatabaseManager {
 	}
 	
 	public String[] getUptreamAlignment(String id) throws Exception{ // For semantic translation
+		//TODO: A channel may have two alignments. There should be an input and an ouput alignment in the registry
 		String[] alignment = null;
 		String platformId = getPlatformId(id);
 		JsonObject db = getPlatform(platformId);
@@ -162,6 +164,8 @@ public class DatabaseManager {
 	}
 	
 	public String[] getDownstreamAlignment(String id) throws Exception{
+		// Not needed for reading data
+		//TODO: A channel may have two alignments. There should be an input and an ouput alignment in the registry
 		String[] alignment = null;
 		String platformId = getPlatformId(id);
 		JsonObject db = getPlatform(platformId);

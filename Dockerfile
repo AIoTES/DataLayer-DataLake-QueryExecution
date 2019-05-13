@@ -1,6 +1,8 @@
 FROM java:8 
 
 # Install maven
+RUN rm /etc/apt/sources.list.d/jessie-backports.list
+RUN echo "deb http://deb.debian.org/debian jessie main\ndeb http://security.debian.org jessie/updates main" > /etc/apt/sources.list
 RUN apt-get update
 RUN apt-get install -y maven
 
