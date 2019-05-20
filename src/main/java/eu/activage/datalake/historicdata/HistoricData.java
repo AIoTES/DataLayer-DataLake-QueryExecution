@@ -109,7 +109,7 @@ public class HistoricData {
     	JsonArray result = null;
     	JsonParser parser = new JsonParser();
     	
-    	// URL of the webservice
+    	// URL of the web service
     	String url = dbManager.getUrl(id);
     	
     	// For translation
@@ -120,7 +120,7 @@ public class HistoricData {
     	String user = dbManager.getUser(id);
     	String password = dbManager.getPassword(id);
     	
-    	// Get historic data from the webservice
+    	// Get historic data from the web service
     	URI uri = createUri(url, deviceId, deviceType, dateFrom, dateTo);
     	String resultRaw = callWebService(uri, user, password);
     	    	

@@ -3,6 +3,8 @@ package eu.activage.datalake.historicdata;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -23,9 +25,16 @@ public class DatabaseManager {
 	JsonArray dbs;
 	String serviceRegistryUrl;
 	String platformRegistryUrl;
-	final String DB = "historic-webservices";
 	final String SERVICES = "services";
 	final String PLATFORMS = "platforms";
+	final String PLATFORM_WEBSERVICE = "platform-historic";
+	final String INDEPENDENT_STORAGE = "independent-storage";
+	final String ID = "id";
+	final String TYPE = "type";
+	final String URL = "url";
+	final String SOURCES  = "sources";
+	final String DS = "DS";
+	final String PLATFORM = "platform";
 	
 	// TODO: USE A REAL DATABASE
 	// TODO: ADD MANAGEMENT FUNCTIONS (REGISTER, UNREGISTER...)?
@@ -77,11 +86,71 @@ public class DatabaseManager {
 			// Use mock registry
 			for(int i=0; i<dbs.size(); i++){
 				JsonObject db = dbs.get(i).getAsJsonObject();
-				String elementId = db.get("id").getAsString();
+				String elementId = db.get(ID).getAsString();
 				if(id.equals(elementId)) target = db;
 			}
 		}
 		return target;
+	}
+	
+	public String[] getDBIds(String[] ds, String[] platform) throws Exception{
+		JsonParser parser = new JsonParser();
+		List<String> ids = new ArrayList<String>();
+		JsonArray target = new JsonArray();
+		
+		// Use JSON server
+		HttpClient httpClient = HttpClientBuilder.create().build();
+		
+		if (platform!=null && ds==null){
+			
+			// Get service Ids for each platform type
+			for(String param:platform){
+				HttpGet httpGet = new HttpGet(serviceRegistryUrl + "?" + PLATFORM + "=" + param);
+				HttpResponse httpResponse = httpClient.execute(httpGet);
+				int responseCode = httpResponse.getStatusLine().getStatusCode();
+				if(responseCode==200){
+				   HttpEntity responseEntity = httpResponse.getEntity();
+				   if(responseEntity!=null) {
+					   target.addAll(parser.parse(EntityUtils.toString(responseEntity)).getAsJsonArray());
+				   } 
+				}else{
+					throw new Exception("Response code received from Registry: " + responseCode);
+				}
+			}
+			
+			
+		} else if(platform == null && ds != null){
+			
+			// Get service Ids for each DS
+			for(String param:ds){
+				HttpGet httpGet = new HttpGet(serviceRegistryUrl + "?" + DS + "=" + param);
+				HttpResponse httpResponse = httpClient.execute(httpGet);
+				int responseCode = httpResponse.getStatusLine().getStatusCode();
+			    if(responseCode==200){
+					HttpEntity responseEntity = httpResponse.getEntity();
+					if(responseEntity!=null) {
+						target.addAll(parser.parse(EntityUtils.toString(responseEntity)).getAsJsonArray());
+					} 
+				}else{
+					throw new Exception("Response code received from Registry: " + responseCode);
+				}
+			}
+			
+		} else{ 
+			throw new Exception("Incorrect request parameters");
+		}
+		
+		// TODO: check if response is empty
+		
+		for(int i=0;i<target.size();i++){
+		    JsonObject object = target.get(i).getAsJsonObject();
+			String type = object.get(TYPE).getAsString();
+			// Check types
+			if(type.equals(PLATFORM_WEBSERVICE) || type.equals(INDEPENDENT_STORAGE))
+			 ids.add(object.get(ID).getAsString());
+	   }
+				
+		return ids.toArray(new String[ids.size()]);
 	}
 	
 	public JsonObject getPlatform(String platformId) throws Exception{
@@ -91,7 +160,7 @@ public class DatabaseManager {
 			// Use JSON server
 			HttpClient httpClient = HttpClientBuilder.create().build();
 			URIBuilder builder = new URIBuilder(platformRegistryUrl);
-	  		builder.addParameter("id", platformId);
+	  		builder.addParameter(ID, platformId);
 	  		URI uri = builder.build();
 	  		HttpGet httpGet = new HttpGet(uri);
 			
@@ -123,8 +192,8 @@ public class DatabaseManager {
 		// check also if it's a historic data web service?
 		JsonObject db = getDb(id);
 		if(db != null){
-			String type = db.get("type").getAsString();
-			if(type.equals("independent-storage")) return true; // "common"
+			String type = db.get(TYPE).getAsString();
+			if(type.equals(INDEPENDENT_STORAGE)) return true; 
 			else return false;
 		} 
 		else throw new Exception("Data origin not found");
@@ -133,14 +202,14 @@ public class DatabaseManager {
 	public String getUrl(String id) throws Exception{ // Get db location
 		String response = null;
 		JsonObject db = getDb(id);
-		if(db != null) response = db.get("url").getAsString();	
+		if(db != null) response = db.get(URL).getAsString();	
 		return response;
 	}
 	
-	public String getPlatformId(String id) throws Exception{ // To get data from the SIL registry
+	public String getPlatformId(String id) throws Exception{ // To get translation data from the SIL registry
 		String response = null;
 		JsonObject db = getDb(id);
-		if(db != null) response = db.get("platforms").getAsJsonArray().get(0).getAsString();
+		if(db != null) response = db.get(SOURCES).getAsJsonArray().get(0).getAsString(); // TODO: perhaps it should return the full array (?)
 		return response;
 	}
 	

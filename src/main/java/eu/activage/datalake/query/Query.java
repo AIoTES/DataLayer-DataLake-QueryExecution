@@ -23,10 +23,12 @@ class Query {
  		return endDate;
  	}
  	
-    public String[] getTableIds(){
-    	// Allow only platform or ds
-    	if (platform!=null) return platform;
-		else return ds;
+    public String[] getplatforms(){
+    	return platform;
+    }
+    
+    public String[] getDs(){
+    	return ds;
     }
  	
     public String[] getDeviceIds(){

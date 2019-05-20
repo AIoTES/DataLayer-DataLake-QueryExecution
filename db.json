@@ -21,18 +21,17 @@
     {
       "id": "ipsm",
       "type": "semantic-translator",
-      "url": "http://localhost:8888/",
-      "platforms": [
-        "http://inter-iot.eu/platforms/uaal-greece"
-      ]
+      "url": "http://localhost:8888/"
     },
 	{
         "id": "uaal",
         "type": "platform-historic",
         "url": "http://160.40.50.78:1080/api/assignments/measurements/all?tenantAuthToken=a7e46008-b5ab-449c-8777-e39c4b30ed49",
-        "platforms": [
+        "sources": [
 			"http://inter-iot.eu/platforms/uaal-greece"
 		],
+		"DS": "Greece",
+		"platform": "universAAL",
 		"user": "admin",
 		"password": "P@ssw0rd"
     },
@@ -40,9 +39,11 @@
         "id": "ids",
         "type": "independent-storage",
         "url": "http://localhost:4567/",
-        "platforms": [
+        "sources": [
 			"http://inter-iot.eu/platforms/test-platform"
 		],
+		"DS": "Madrid",
+		"platform": "universAAL",
 		"user": "",
 		"password": ""
     }

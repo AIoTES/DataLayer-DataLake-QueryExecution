@@ -31,8 +31,10 @@ class DataLakeClient {
 	
 	// Translate query into calls to webservices
 	JsonArray translate(Query q) throws Exception{
+		// Analyze query and identify data sources
+		// It's possible that a single query translates to multiple calls
 		JsonArray apiCalls = new JsonArray();
-		String[] dbIds = q.getTableIds();
+		String[] dbIds = dbManager.getDBIds(q.getDs(),q.getplatforms());
 		
 		logger.info("Query parameterms: " + q.toString()); //DEBUG
 		
@@ -40,14 +42,9 @@ class DataLakeClient {
 		if(columns== null) columns = q.getDeviceIds();
 		
 		for(String dbId:dbIds){
-			// It's possible that a single query translates to multiple calls
 			// Get database type and location
-			
 			// TODO: integrate indexing service
-			
-			// Analyze query and identify data sources (by the index)
-			// Using platform or DS as index
-			
+						
 			for (int i = 0; i < columns.length; i++){
 				String fromDate = q.getStartDate();
 				String toDate = q.getEndDate();
@@ -66,9 +63,7 @@ class DataLakeClient {
 	
 	String execute(Query q) throws Exception{
 		String response = null;
-		// DS or platform (name) = index
-		// In the current version, indices represent platforms (for the historic data module) and columns represent devices (or magnitudes?)
-		String[] dbIds = q.getTableIds();
+		String[] dbIds = dbManager.getDBIds(q.getDs(),q.getplatforms()); // Get service identifiers by DS and platform type
 		
 		// Get database type and location
 		// It's possible that a single query translates to multiple calls

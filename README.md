@@ -1,4 +1,4 @@
-# QueryExecution
+# Query Execution component
 ### Run query execution component
 
 
@@ -9,6 +9,10 @@ mvn clean compile assembly:single
 
 `java -jar target\QueryExecution-0.0.1-SNAPSHOT-jar-with-dependencies.jar {service registry prototype URL} {TCP port}`
 
+
+Default TCP port for the REST API: 4570
+
+Swagger description of the API:   http://localhost:4570/swagger
 
 
 ### Web service registry prototype
@@ -27,7 +31,7 @@ Deploy JSON server on Docker:
 Example JSON database file: db.json
 
 
-Add **historic data webservices** (including Independent Data Storage) under **"services"**. The id of the Independent Data Storage must be the name of the DB where the the historic data are stored and the type must be "independent-storage". For other historic data web services, use type="platform-historic". The attribute "platforms" contains the identifiers of the IoT platfoms associated with a service. In the case of historic data webservices, platform data is used to determine the syntactic and semantic translation of the retrieved data.
+Add **historic data web services** (including Independent Data Storage) under **"services"**. The id of the Independent Data Storage must be the name of the DB where the the historic data are stored and the type must be "independent-storage". For other historic data web services, use type="platform-historic". The attributes "DS" and "platform" correspond to the DS name and type of the  platform associated with this web service (for example, universAAL), respectively, and can be used as input parameters in the queries. The attribute "sources" contains the identifiers of the IoT platforms associated with a service. In the case of historic data web services, platform data is used to determine the syntactic and semantic translation of the retrieved data.
 
 Add **translation web services** under **"services"**. For the IPSM, use type="semantic-translator".
 

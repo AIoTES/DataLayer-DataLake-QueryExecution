@@ -63,7 +63,7 @@
     },
     "/query": {
       "post": {
-        "summary": "Register (start managing) devices",
+        "summary": "Execute query",
         "description": "",
         "operationId": "query",
         "consumes": [
@@ -100,7 +100,7 @@
     },
     "/querytranslation": {
       "post": {
-        "summary": "Subscribe to specified devices",
+        "summary": "Translate a JSON query into calls to the respective web services",
         "description": "",
         "operationId": "queryTranslation",
         "consumes": [
@@ -146,11 +146,19 @@
       }
     },
     "QueryTranslationResponse": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      }
-    },
+		"type": "array",
+		"items": {
+			"type": "object",
+			"properties": {
+				"url": {
+					"type": "string"
+				},
+				"headers": {
+					"type": "object"
+				}
+			}
+		}
+	},
     "Schema": {
       "type": "object"
     },
