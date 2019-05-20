@@ -171,15 +171,19 @@ public class HistoricData {
   		   
 //  		   SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd"); // Format of the input query date values. No time information included
   		   SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS"); // Format of the input query date values. No time information included
-  		   Date startDate = f.parse(dateFrom);
-  		   Date endDate = f.parse(dateTo);
 //  		   f.applyPattern("yyyy-MM-dd'T'HH:mm:ss.SSS"); // Example: 2018-02-01T00:00:00.000Z
   		   
   		   URIBuilder builder = new URIBuilder(url);
   		   if(deviceType!=null) builder.addParameter("deviceType", deviceType);
   		   if(deviceId!=null) builder.addParameter("deviceId", deviceId);
-  		   if(startDate!=null) builder.addParameter("startDate", f.format(startDate) + "Z");
-  		   if(endDate!=null) builder.addParameter("endDate", f.format(endDate) + "Z");
+  		   if(dateFrom!=null){
+  			 Date startDate = f.parse(dateFrom); 
+  			 builder.addParameter("startDate", f.format(startDate) + "Z");
+  		   } 
+  		   if(dateTo!=null){
+  			 Date endDate = f.parse(dateTo);
+  			 builder.addParameter("endDate", f.format(endDate) + "Z");
+  		   } 
   		   uri = builder.build();
   	   }
   	   
@@ -301,16 +305,19 @@ public class HistoricData {
 	    * Create URL for GET method
 	    * */
 	   URI uri = null;
+	   String startDate = null;
+	   String endDate = null;
+	   
 	   if(url!=null && !url.isEmpty()){
   		   if(!url.endsWith("/")) url = url + "/"; // Just in case
 		   
 //  		   SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd");
   		   SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS"); // Format of the input query date values. TODO: check and define input format
-  		   Date startDate = f.parse(dateFrom);
-  		   Date endDate = f.parse(dateTo);
+  		   if(dateFrom != null) startDate = f.parse(dateFrom).toString();
+  		   if(dateTo != null) endDate = f.parse(dateTo).toString();
 //  		   f.applyPattern("yyyy-MM-dd'T'HH:mm:ss.SSS"); // Example: 2018-02-01T00:00:00.000Z
   		   
-  		   String query = createIdsQuery(deviceType, deviceId, startDate.toString(), endDate.toString()); // DB = deviceType
+  		   String query = createIdsQuery(deviceType, deviceId, startDate, endDate); // DB = deviceType
   		   String encodedQuery = URLEncoder.encode(query, "UTF-8");
   		   
   		   URIBuilder builder = new URIBuilder(url + "independentStorage/select");

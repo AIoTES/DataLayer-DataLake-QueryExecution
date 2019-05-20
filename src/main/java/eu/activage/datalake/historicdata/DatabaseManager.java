@@ -67,7 +67,9 @@ public class DatabaseManager {
 				   if(responseEntity!=null) {
 					   JsonParser parser = new JsonParser();
 					   target = parser.parse(EntityUtils.toString(responseEntity)).getAsJsonObject();
-				   }else target = null;
+				   }else target = null; 
+			   }else if (responseCode==404){
+				   throw new Exception("Service " + id + " not found in the registry"); // Specific error message for service not registered (404 code)
 			   }else{
 				   throw new Exception("Response code received from Registry: " + responseCode);
 			   }
@@ -100,7 +102,9 @@ public class DatabaseManager {
 				   if(responseEntity!=null) {
 					   JsonParser parser = new JsonParser();
 					   target = parser.parse(EntityUtils.toString(responseEntity)).getAsJsonArray().get(0).getAsJsonObject();
-				   }else target = null;
+				   }else target = null; 
+			   }else if (responseCode==404){
+				   throw new Exception("Platform " + platformId + " not found in the registry"); // Specific error message for service not registered (404 code)
 			   }else{
 				   throw new Exception("Response code received from Registry: " + responseCode);
 			   }
