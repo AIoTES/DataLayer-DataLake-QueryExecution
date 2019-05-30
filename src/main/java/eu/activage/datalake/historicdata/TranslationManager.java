@@ -68,7 +68,6 @@ public class TranslationManager {
 		Properties prop = new Properties();
 		InputStream input = null;
 		serviceRegistryUrl = null;
-				
 		try {
 			input = getClass().getClassLoader().getResourceAsStream("config.properties");
 			// load a properties file
@@ -94,25 +93,23 @@ public class TranslationManager {
 	}
 	
 	public String syntacticTranslation(String data, String type) throws Exception{
-		
 		String response;
 		// SELECT SYNTACTIC TRANSLATOR USING THE PLATFORM TYPE IDENTIFIER (SAME VALUE AS IN THE BRIDGE)
 		// TODO: get syntactic translation web services URLs from the registry
 		switch(type){
-       	case " http://inter-iot.eu/FIWARE":
-       		response = translateFromFiware(data);
-       		break;
-       	case "http://inter-iot.eu/sofia2":
-       		response = translateFromSofia(data);
-       		break;
-       	case "http://inter-iot.eu/UniversAAL":
-       		response = translateFromUniversaal(data);
-       		break;
-       		// etc
-       	default:
-       		throw new Exception("Platform type not supported: " + type);	
-       } 
-		
+       		case " http://inter-iot.eu/FIWARE":
+       			response = translateFromFiware(data);
+       			break;
+       		case "http://inter-iot.eu/sofia2":
+       			response = translateFromSofia(data);
+       			break;
+       		case "http://inter-iot.eu/UniversAAL":
+       			response = translateFromUniversaal(data);
+       			break;
+       			// etc
+       		default:
+       			throw new Exception("Platform type not supported: " + type);	
+        } 
 		return response;
 	}
 	
@@ -121,9 +118,7 @@ public class TranslationManager {
 //        logger.debug("Translate data from Fiware...  ");
         FIWAREv2Translator translator2 = new FIWAREv2Translator();
         Model transformedModel = translator2.toJenaModelTransformed(data);
-        
         // TODO: Change identifier (hasId). Use the same format as the messages from the bridge
-
         // Create Inter-IoT message
 	    return createObservationMessage(transformedModel);
 	}
@@ -133,7 +128,6 @@ public class TranslationManager {
 //        logger.debug("Translate data from SOFIA2...  ");
         Sofia2Translator translator = new Sofia2Translator();
         Model transformedModel = translator.toJenaModelTransformed(data);
-
         // Create Inter-IoT message
 	    return createObservationMessage(transformedModel);
 	}
@@ -143,67 +137,63 @@ public class TranslationManager {
 //        logger.debug("Translate data from universAAL...  ");
 	    Model eventModel = ModelFactory.createDefaultModel();
 	    eventModel.read(new ByteArrayInputStream(data.getBytes()), null, "TURTLE");
-	     
-	     // Create Inter-IoT message
-	     return createObservationMessage(eventModel);
+	    // Create Inter-IoT message
+	    return createObservationMessage(eventModel);
 	}
 	
 	private String createObservationMessage(Model model) throws IOException{
-	    	// ADD METADATA GRAPH
-	    	Message callbackMessage = new Message();
-	    	// Metadata
-	        PlatformMessageMetadata metadata = new MessageMetadata().asPlatformMessageMetadata();
-	        metadata.initializeMetadata();
-	        metadata.addMessageType(URIManagerMessageMetadata.MessageTypesEnum.OBSERVATION);
-	        if(!platformId.isEmpty()) metadata.setSenderPlatformId(new EntityID(platformId)); // Add senderPlatformId
-	        callbackMessage.setMetadata(metadata);
-	        
-	        //Finish creating the message
-	        MessagePayload messagePayload = new MessagePayload(model);
-	        callbackMessage.setPayload(messagePayload);  
-	        
-	        ObjectMapper mapper = new ObjectMapper();
-	        ObjectNode jsonMessage = (ObjectNode) mapper.readTree(callbackMessage.serializeToJSONLD());
-	        return jsonMessage.toString();
-	    }
+	   // ADD METADATA GRAPH
+	   Message callbackMessage = new Message();
+	   // Metadata
+	   PlatformMessageMetadata metadata = new MessageMetadata().asPlatformMessageMetadata();
+	   metadata.initializeMetadata();
+	   metadata.addMessageType(URIManagerMessageMetadata.MessageTypesEnum.OBSERVATION);
+	   if(!platformId.isEmpty()) metadata.setSenderPlatformId(new EntityID(platformId)); // Add senderPlatformId
+	   callbackMessage.setMetadata(metadata);     
+	   //Finish creating the message
+	   MessagePayload messagePayload = new MessagePayload(model);
+	   callbackMessage.setPayload(messagePayload);          
+	   ObjectMapper mapper = new ObjectMapper();
+	   ObjectNode jsonMessage = (ObjectNode) mapper.readTree(callbackMessage.serializeToJSONLD());
+	   return jsonMessage.toString();
+	}
 	
 	public String semanticTranslation(String data, String alignName, String alignVersion) throws Exception{
-		   String result = data;
-		   HttpClient httpClient = HttpClientBuilder.create().build();
-		   if(ipsmUrl!=null && !ipsmUrl.equals("")){
-			   // Call IPSM for semantic translation
-			   HttpPost ipsmPost = new HttpPost(ipsmUrl + "translation");
-			   JsonObject translationData = new JsonObject();
-			   JsonObject alignId = new JsonObject(); 
-			   alignId.addProperty("name", alignName);
-			   alignId.addProperty("version", alignVersion);
-			   JsonArray array = new JsonArray();
-			   array.add(alignId);
-			   translationData.add("alignIDs", array);
-			   translationData.addProperty("graphStr", result);
-			   HttpEntity translationEntity = new StringEntity(translationData.toString(), ContentType.APPLICATION_JSON);
-			   ipsmPost.setEntity(translationEntity);
-			   HttpResponse httpResponse = httpClient.execute(ipsmPost);
-			   int responseCode = httpResponse.getStatusLine().getStatusCode();
-			   if(responseCode==200){
-				   HttpEntity responseEntity = httpResponse.getEntity();
-				   if(responseEntity!=null) {
-					   JsonParser parser = new JsonParser();
-					   JsonObject responseBody = parser.parse(EntityUtils.toString(responseEntity)).getAsJsonObject();
-					   result = responseBody.get("graphStr").getAsString();
-				   }
-			   }else{
-					throw new Exception("Response code received from IPSM: " + responseCode);
-				}
+		String result = data;
+		HttpClient httpClient = HttpClientBuilder.create().build();
+		if(ipsmUrl!=null && !ipsmUrl.equals("")){
+		   // Call IPSM for semantic translation
+		   HttpPost ipsmPost = new HttpPost(ipsmUrl + "translation");
+		   JsonObject translationData = new JsonObject();
+		   JsonObject alignId = new JsonObject(); 
+		   alignId.addProperty("name", alignName);
+		   alignId.addProperty("version", alignVersion);
+		   JsonArray array = new JsonArray();
+		   array.add(alignId);
+		   translationData.add("alignIDs", array);
+		   translationData.addProperty("graphStr", result);
+		   HttpEntity translationEntity = new StringEntity(translationData.toString(), ContentType.APPLICATION_JSON);
+		   ipsmPost.setEntity(translationEntity);
+		   HttpResponse httpResponse = httpClient.execute(ipsmPost);
+		   int responseCode = httpResponse.getStatusLine().getStatusCode();
+		   if(responseCode==200){
+			   HttpEntity responseEntity = httpResponse.getEntity();
+			   if(responseEntity!=null) {
+				   JsonParser parser = new JsonParser();
+				   JsonObject responseBody = parser.parse(EntityUtils.toString(responseEntity)).getAsJsonObject();
+				   result = responseBody.get("graphStr").getAsString();
+			   }
 		   }else{
-			   logger.warn("Could not send data to IPSM: no URL. No semantic translation was performed.");
+				throw new Exception("Response code received from IPSM: " + responseCode);
 		   }
-		   return result;
-	   }
+		}else{
+		   logger.warn("Could not send data to IPSM: no URL. No semantic translation was performed.");
+		}
+		return result;
+	}
 	
 	private String getIpsmUrl() throws Exception{
-		String url = null;
-		
+		String url = null;	
 		if(serviceRegistryUrl!=null){
 			// Use JSON server
 			HttpClient httpClient = HttpClientBuilder.create().build();
@@ -226,7 +216,6 @@ public class TranslationManager {
 		}else{
 			url = ipsmUrl;
 		}
-		
 		return url;
 	}
 	

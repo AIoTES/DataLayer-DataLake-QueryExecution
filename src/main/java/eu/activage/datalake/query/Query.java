@@ -10,8 +10,7 @@ class Query {
 	String endDate;
 	String[] platform;
 	String[] ds;
-	
-    
+	    
     // Utility methods
  	public String getStartDate() throws Exception{		
  		// TODO: check date format of the historic data service

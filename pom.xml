@@ -20,7 +20,7 @@
          <url>https://oss.sonatype.org/content/groups/public/</url>
      </repository>
      
-     <!-- INTER-IoT - FOR SYNTACTIC TRANSLATION - REMOVE WHEN SILv2 IS AVAILABLE -->
+     <!-- INTER-IoT - FOR SYNTACTIC TRANSLATION - REMOVE WHEN SSIL IS AVAILABLE -->
      <repository>
           <id>nexus.inter-iot.eu-releases</id>
           <url>http://nexus.inter-iot.eu/repository/maven-releases/</url>
@@ -38,7 +38,7 @@
 
   <dependencies>
   	
-  	 <!-- INTER-IoT - FOR SYNTACTIC TRANSLATION - REMOVE WHEN SILv2 IS AVAILABLE -->
+  	 <!-- INTER-IoT - FOR SYNTACTIC TRANSLATION - REMOVE WHEN SSIL IS AVAILABLE -->
 	  <dependency>
 		<groupId>eu.inter-iot.translators</groupId>
 		<artifactId>syntactic-translators</artifactId>

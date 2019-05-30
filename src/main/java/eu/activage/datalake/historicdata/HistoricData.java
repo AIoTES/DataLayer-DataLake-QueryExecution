@@ -64,8 +64,25 @@ public class HistoricData {
 		logger.info("Retrieving historic data from platform: " + platform);
 		
 		if(dbManager.isIndependentDataStorage(platform)){
-			String query = createIdsQuery(deviceType, deviceId, fromDate, toDate); // Table = deviceType
-			response = getFromIds(platform, deviceType, query); // Table = deviceType
+			// Table = deviceType
+			if(deviceType == null){
+				// If deviceType is empty, list all tables and send the same query to all of them.
+				// get tables from Independent Data Storage
+				JsonArray types = getIdsTables(platform);
+				if(types.size() > 0){
+					response = new JsonArray();
+					for(int i=0; i<types.size(); i++){
+						deviceType = types.get(i).getAsString();
+						String query = createIdsQuery(deviceType, deviceId, fromDate, toDate);
+						response.addAll(getFromIds(platform, deviceType, query));
+					}
+				}
+				
+			}else{
+				// A device type was specified
+				String query = createIdsQuery(deviceType, deviceId, fromDate, toDate); 
+				response = getFromIds(platform, deviceType, query);
+			}
 		}else{
 			response = getFromPlatform(platform, deviceId, deviceType, fromDate, toDate);
 		}
@@ -73,34 +90,51 @@ public class HistoricData {
 		return response;
 	}
     
-    public JsonObject getWebserviceCall(String platform, String deviceId, String deviceType, String fromDate, String toDate) throws Exception{
+    public JsonArray getWebserviceCall(String platform, String deviceId, String deviceType, String fromDate, String toDate) throws Exception{
     	/*
     	 * Returns the complete URL and headers to call the web service using GET
     	 * */
-    	URI responseUri = null;
+    	URI[] responseUri = null;
     	String url = dbManager.getUrl(platform);
+    	JsonArray response = new JsonArray();
     	
     	if(dbManager.isIndependentDataStorage(platform)){
-    		responseUri = createIdsCall(url, platform, deviceId, deviceType, fromDate, toDate);
+    		if(deviceType == null){
+    			JsonArray types = getIdsTables(platform);
+				if(types.size() > 0){
+					responseUri = new URI[types.size()];
+					for(int i=0; i<types.size(); i++){
+						String type = types.get(i).getAsString();
+						responseUri[i] = createIdsCall(url, platform, deviceId, type, fromDate, toDate);
+					}
+				}
+    		}else{
+    			responseUri = new URI[1];
+    			responseUri[0] = createIdsCall(url, platform, deviceId, deviceType, fromDate, toDate);
+    		}
 		}else{
-			responseUri = createUri(url, deviceId, deviceType, fromDate, toDate);
+			responseUri = new URI[1];
+			responseUri[0] = createUri(url, deviceId, deviceType, fromDate, toDate);
 		}
-    	JsonObject response = new JsonObject();
-    	response.addProperty("url", responseUri.toString());
-    	JsonObject headers = new JsonObject();
     	
-    	String user = dbManager.getUser(platform);
-    	String password = dbManager.getPassword(platform);
-    	
-    	if(user!=null && !user.equals("") && password!=null && !password.equals("")){
-    		String authString = user + ":" + password;
-    		byte[] authEncBytes = Base64.getEncoder().encode(authString.getBytes("UTF-8"));
-    		String authStringEnc = new String(authEncBytes);
-    		String authHeader = "Basic " + authStringEnc;
-    		headers.addProperty("Authentication", authHeader);
+    	for(int i=0; i<responseUri.length; i++){
+    		JsonObject responseObject = new JsonObject();
+        	responseObject.addProperty("url", responseUri[i].toString());
+        	JsonObject headers = new JsonObject();
+        	
+        	String user = dbManager.getUser(platform);
+        	String password = dbManager.getPassword(platform);
+        	
+        	if(user!=null && !user.equals("") && password!=null && !password.equals("")){
+        		String authString = user + ":" + password;
+        		byte[] authEncBytes = Base64.getEncoder().encode(authString.getBytes("UTF-8"));
+        		String authStringEnc = new String(authEncBytes);
+        		String authHeader = "Basic " + authStringEnc;
+        		headers.addProperty("Authentication", authHeader);
+        	}
+        	responseObject.add("headers", headers);
+        	response.add(responseObject);
     	}
-    	response.add("headers", headers);
-    	
     	return response;
     }
     
@@ -157,18 +191,14 @@ public class HistoricData {
  			   logger.info("Sending response without translation...");
  			   result = parser.parse(resultRaw).getAsJsonArray();
  		   }
- 	   }     
-    	
-    	return result;
+ 	    }     
+ 	    return result;
     }
     
     URI createUri(String url, String deviceId, String deviceType, String dateFrom, String dateTo) throws Exception{
     	URI uri = null;
     	// Create URL for the web service call
-  	   
   	   if(url!=null && !url.isEmpty()){
-  		   // TODO: define standard interface
-  		   
 //  		   SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd"); // Format of the input query date values. No time information included
   		   SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS"); // Format of the input query date values. No time information included
 //  		   f.applyPattern("yyyy-MM-dd'T'HH:mm:ss.SSS"); // Example: 2018-02-01T00:00:00.000Z
@@ -186,17 +216,14 @@ public class HistoricData {
   		   } 
   		   uri = builder.build();
   	   }
-  	   
   	   return uri;
     }
     
     String callWebService(URI uri, String name, String password) throws Exception{
-    	// Retrieve data from web service
+    	 // Call web service and get data in the platform's format
  	   String resultRaw = "";
  	    	   
  	   if(uri!=null){
- 		   // Call web service and get data in the platform's format
- 		   
  		   // Basic authentication
  		   String authString = name + ":" + password;
  		   byte[] authEncBytes = Base64.getEncoder().encode(authString.getBytes("UTF-8"));
@@ -204,17 +231,15 @@ public class HistoricData {
  		   String authHeader = "Basic " + authStringEnc;
  		   
  		  HttpURLConnection con = (HttpURLConnection) uri.toURL().openConnection();
-
  			// optional default is GET
  		 con.setRequestMethod("GET");
-
  			//add request header
  		 con.setRequestProperty("User-Agent", "Mozilla/5.0");
  		 con.setRequestProperty("Authorization",  authHeader);
  			
  		 int responseCode = con.getResponseCode();
- 		 System.out.println("\nSending 'GET' request to URL : " + uri.toURL());
- 		 System.out.println("Response Code : " + responseCode);
+// 		 System.out.println("\nSending 'GET' request to URL : " + uri.toURL());
+// 		 System.out.println("Response Code : " + responseCode);
 
  		 if(responseCode>=200 && responseCode<=299){
  			BufferedReader in = new BufferedReader(
@@ -225,12 +250,10 @@ public class HistoricData {
  	 			response.append(inputLine);
  	 		}
  	 		in.close();
- 	 			
  	 		resultRaw = response.toString();
  		 }else{
  			throw new Exception("Unsuccessful response code from server: " + responseCode);
- 		 }
- 			
+ 		 }	
  	   }else{
  		  throw new Exception("No web service found for the requested data");
  	   }
@@ -241,41 +264,37 @@ public class HistoricData {
     	/*
     	 * Get data from the Independent Data Storage
     	 * 
+    	 * The db name in the Independent Data Storage is used as identifier in the DB registry
     	 * */
-		// The db name in the Independent Data Storage is used as identifier in the DB registry
 		JsonArray response = null;
 		JsonObject body = new JsonObject();
 		body.addProperty("db", db);
 		body.addProperty("table", table);
 		body.addProperty("query", query);
-		
 		String url = dbManager.getUrl(db);
 		if(!url.endsWith("/")) url = url + "/";
-		
 		HttpClient httpClient = HttpClientBuilder.create().build();
-		
 		HttpPost httpPost = new HttpPost( url + "independentStorage/select");
-		
-		 HttpEntity translationEntity = new StringEntity(body.toString(), ContentType.APPLICATION_JSON);
-		 httpPost.setEntity(translationEntity);
-		 HttpResponse httpResponse = httpClient.execute(httpPost);
-		 HttpEntity responseEntity = httpResponse.getEntity();
-		 int responseCode = httpResponse.getStatusLine().getStatusCode();
-		 logger.info("Response code: " + httpResponse.getStatusLine().getStatusCode());
-		 if(responseCode==200){
-			 if(responseEntity!=null) {
-				 JsonParser parser = new JsonParser();
-				 String data = EntityUtils.toString(responseEntity);
-				 JsonArray array = parser.parse(data).getAsJsonArray();
-				 response = new JsonArray();
-				 for(JsonElement observation:array){
-					 String meas = observation.getAsJsonObject().get(IDS_COLUMN).getAsString();
-					 response.add(parser.parse(meas).getAsJsonObject());
-				 }
-			 }
-		 }else{
-				throw new Exception("Could not retrieve data. Response code received from Independent Data Storage: " + responseCode);
-		 }	
+		HttpEntity translationEntity = new StringEntity(body.toString(), ContentType.APPLICATION_JSON);
+		httpPost.setEntity(translationEntity);
+		HttpResponse httpResponse = httpClient.execute(httpPost);
+		HttpEntity responseEntity = httpResponse.getEntity();
+		int responseCode = httpResponse.getStatusLine().getStatusCode();
+		logger.info("Response code: " + httpResponse.getStatusLine().getStatusCode());
+		if(responseCode==200){
+			if(responseEntity!=null) {
+				JsonParser parser = new JsonParser();
+				String data = EntityUtils.toString(responseEntity);
+				JsonArray array = parser.parse(data).getAsJsonArray();
+				response = new JsonArray();
+				for(JsonElement observation:array){
+					JsonObject meas = observation.getAsJsonObject().get(IDS_COLUMN).getAsJsonObject();
+					response.add(meas);
+				}
+			}
+		}else{
+			throw new Exception("Could not retrieve data. Response code received from Independent Data Storage: " + responseCode);
+		}	
 		return response;
 	}
    
@@ -307,27 +326,49 @@ public class HistoricData {
 	   URI uri = null;
 	   String startDate = null;
 	   String endDate = null;
-	   
 	   if(url!=null && !url.isEmpty()){
   		   if(!url.endsWith("/")) url = url + "/"; // Just in case
-		   
 //  		   SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd");
-  		   SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS"); // Format of the input query date values. TODO: check and define input format
+  		   SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS"); // Format of the input query date values
   		   if(dateFrom != null) startDate = f.parse(dateFrom).toString();
   		   if(dateTo != null) endDate = f.parse(dateTo).toString();
 //  		   f.applyPattern("yyyy-MM-dd'T'HH:mm:ss.SSS"); // Example: 2018-02-01T00:00:00.000Z
-  		   
   		   String query = createIdsQuery(deviceType, deviceId, startDate, endDate); // DB = deviceType
   		   String encodedQuery = URLEncoder.encode(query, "UTF-8");
   		   
   		   URIBuilder builder = new URIBuilder(url + "independentStorage/select");
   		   builder.addParameter("db", db);
-  		   builder.addParameter("table", deviceType); // TODO: check if this is a good approach
+  		   builder.addParameter("table", deviceType);
   		   builder.addParameter("query", encodedQuery);
   		   uri = builder.build();
   	   }
-  	   
   	   return uri;
-	   
    }
+   
+   JsonArray getIdsTables(String db) throws Exception{
+	   JsonArray response = null;
+	   JsonObject body = new JsonObject();
+	   body.addProperty("db", db);
+	   String url = dbManager.getUrl(db);
+	   if(!url.endsWith("/")) url = url + "/";
+	   HttpClient httpClient = HttpClientBuilder.create().build();
+	   HttpPost httpPost = new HttpPost( url + "independentStorage/tables");
+	   HttpEntity requestEntity = new StringEntity(body.toString(), ContentType.APPLICATION_JSON);
+	   httpPost.setEntity(requestEntity);
+	   HttpResponse httpResponse = httpClient.execute(httpPost);
+	   HttpEntity responseEntity = httpResponse.getEntity();
+	   int responseCode = httpResponse.getStatusLine().getStatusCode();
+	   logger.info("Response code: " + httpResponse.getStatusLine().getStatusCode());
+	   if(responseCode==200){
+			if(responseEntity!=null) {
+				JsonParser parser = new JsonParser();
+				String data = EntityUtils.toString(responseEntity);
+				response = parser.parse(data).getAsJsonObject().get("tables").getAsJsonArray();
+			}
+	   }else{
+				throw new Exception("Could not retrieve DB names. Response code received from Independent Data Storage: " + responseCode);
+	   }	
+	   return response;
+   }
+   
 }

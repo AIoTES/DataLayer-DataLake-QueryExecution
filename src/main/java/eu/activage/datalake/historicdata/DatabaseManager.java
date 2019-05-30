@@ -36,8 +36,7 @@ public class DatabaseManager {
 	final String DS = "DS";
 	final String PLATFORM = "platform";
 	
-	// TODO: USE A REAL DATABASE
-	// TODO: ADD MANAGEMENT FUNCTIONS (REGISTER, UNREGISTER...)?
+	// The current implementation uses JSON Server to store the service management data
 	
 	public DatabaseManager(String url){
 		// Use prototype service registry (JSON server)
@@ -100,9 +99,7 @@ public class DatabaseManager {
 		
 		// Use JSON server
 		HttpClient httpClient = HttpClientBuilder.create().build();
-		
 		if (platform!=null && ds==null){
-			
 			// Get service Ids for each platform type
 			for(String param:platform){
 				HttpGet httpGet = new HttpGet(serviceRegistryUrl + "?" + PLATFORM + "=" + param);
@@ -118,9 +115,7 @@ public class DatabaseManager {
 				}
 			}
 			
-			
 		} else if(platform == null && ds != null){
-			
 			// Get service Ids for each DS
 			for(String param:ds){
 				HttpGet httpGet = new HttpGet(serviceRegistryUrl + "?" + DS + "=" + param);
@@ -155,7 +150,6 @@ public class DatabaseManager {
 	
 	public JsonObject getPlatform(String platformId) throws Exception{
 		JsonObject target = null;
-		
 		if(platformRegistryUrl!=null){
 			// Use JSON server
 			HttpClient httpClient = HttpClientBuilder.create().build();

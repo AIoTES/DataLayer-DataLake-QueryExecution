@@ -36,81 +36,64 @@ public class QueryExecution {
     	spark = Service.ignite().port(port);
     	// Swagger UI
     	spark.staticFileLocation("/public");
-    	
     	spark.get("/swagger",(req, res) -> {res.redirect("index.html"); return null;});
     	
- //   	spark.path("/api", () -> { //  /dataIntegrationEngine
-    	
-    		spark.post("/getSchema", (request, response) -> {
-    			// TODO
-    			
-    			logger.info("Get Schema");
-    			
-    			// TODO: call some (future) service to get the requested schema
-    			// Get test data from a file
-    			URL test = Resources.getResource("test-schema.json");
-    		    String schema = Resources.toString(test, Charsets.UTF_8);
-    			
-    			response.header("Content-Type", "application/json;charset=UTF-8");
-    			response.status(200);
-    			return schema;
-    		});
-    	
-    	
-    		spark.post("/query", (request, response) -> {
-    			JsonObject responseBody = new JsonObject();    			   			
-    			    			
-    			try {
-    				// Extract query
-    				JsonParser parser = new JsonParser();
-    				JsonObject reqBody = (JsonObject) parser.parse(request.body());
-    				// Parse query
-    				Query query = new Gson().fromJson(reqBody, Query.class);
-    				    				
-    				// Execute query   		
-    				String result = client.execute(query);
+    	spark.post("/getSchema", (request, response) -> {
+    		// TODO	
+    		logger.info("Get Schema");
     		
-    				// Format response
-    				JsonElement dbResponse = parser.parse(result).getAsJsonArray();
-    				responseBody.add("records", dbResponse);
-    			
-    			} catch (Exception e) {
-                    response.status(400);
-                    e.printStackTrace();
-                    return e.getMessage();
-                }
-    		
-   		 		response.header("Content-Type", "application/json;charset=UTF-8");
-   		 		response.status(200);
-   		 		return responseBody.toString();
-    		});
-    		
-    		spark.post("/querytranslation", (request, response) -> { 
-    			JsonArray result;
-    			    			
-    			try {
-    				// Extract query
-    				JsonParser parser = new JsonParser();
-    				JsonObject reqBody = (JsonObject) parser.parse(request.body());
-    				// Parse query
-    				Query query = new Gson().fromJson(reqBody, Query.class);
-    				    				
-    				// Execute query   		
-    				result = client.translate(query);
-    			
-    			} catch (Exception e) {
-                    response.status(400);
-                    e.printStackTrace();
-                    return e.getMessage();
-                }
-    		
-   		 		response.header("Content-Type", "application/json;charset=UTF-8");
-   		 		response.status(200);
-   		 		return result.toString();
-    		});
+    		// TODO: call some (future) service to get the requested schema
+    		// Get test data from a file
+    		URL test = Resources.getResource("test-schema.json");
+    		String schema = Resources.toString(test, Charsets.UTF_8);	
+    		response.header("Content-Type", "application/json;charset=UTF-8");
+    		response.status(200);
+    		return schema;
+    	});
     	
- //   	});
-    
+    	spark.post("/query", (request, response) -> {
+    		JsonObject responseBody = new JsonObject();    			   					    			
+    		try {
+    			// Extract query
+    			JsonParser parser = new JsonParser();
+    			JsonObject reqBody = (JsonObject) parser.parse(request.body());
+    			// Parse query
+    			Query query = new Gson().fromJson(reqBody, Query.class);			    				
+    			// Execute query   		
+    			String result = client.execute(query);
+    			// Format response
+    			JsonElement dbResponse = parser.parse(result).getAsJsonArray();
+    			responseBody.add("records", dbResponse);	
+    		} catch (Exception e) {
+                response.status(400);
+                e.printStackTrace();
+                return e.getMessage();
+            }
+    		
+   		 	response.header("Content-Type", "application/json;charset=UTF-8");
+   		 	response.status(200);
+   		 	return responseBody.toString();
+    	});
+    		
+    	spark.post("/querytranslation", (request, response) -> { 
+    		JsonArray result;		    			
+    		try {
+    			// Extract query
+    			JsonParser parser = new JsonParser();
+    			JsonObject reqBody = (JsonObject) parser.parse(request.body());
+    			// Parse query
+    			Query query = new Gson().fromJson(reqBody, Query.class);			    				
+    			// Translate query   		
+    			result = client.translate(query);	
+    		} catch (Exception e) {
+                response.status(400);
+                e.printStackTrace();
+                return e.getMessage();
+            }
+   		 	response.header("Content-Type", "application/json;charset=UTF-8");
+   		 	response.status(200);
+   		 	return result.toString();
+    	});
     }
     
     public void stop() {
