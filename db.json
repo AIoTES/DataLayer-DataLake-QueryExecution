@@ -24,6 +24,30 @@
       "url": "http://localhost:8888/"
     },
 	{
+      "id": "fiware-translator",
+      "type": "syntactic-translator",
+      "url": "http://localhost:4568/fiware",
+      "platformType": " http://inter-iot.eu/FIWARE"
+    },
+	{
+      "id": "uaal-translator",
+      "type": "syntactic-translator",
+      "url": "http://localhost:4568/universaal",
+	  "platformType": "http://inter-iot.eu/UniversAAL"
+    },
+	{
+      "id": "fiware-translator",
+      "type": "syntactic-translator",
+      "url": "http://localhost:4568/fiware",
+      "platformType": " http://inter-iot.eu/FIWARE"
+    },
+	{
+      "id": "sofia-translator",
+      "type": "syntactic-translator",
+      "url": "http://localhost:4568/sofia",
+	  "platformType": "http://inter-iot.eu/sofia2"
+    },
+	{
         "id": "uaal",
         "type": "platform-historic",
         "url": "http://160.40.50.78:1080/api/assignments/measurements/all?tenantAuthToken=a7e46008-b5ab-449c-8777-e39c4b30ed49",

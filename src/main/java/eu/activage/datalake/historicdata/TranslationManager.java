@@ -3,10 +3,12 @@ package eu.activage.datalake.historicdata;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URLEncoder;
 import java.util.Properties;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
+import org.apache.http.ParseException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
@@ -56,6 +58,7 @@ public class TranslationManager {
 	String serviceRegistryUrl;
 	final String DB = "services";
 	final String IPSM_TYPE = "semantic-translator";
+	final String SYNTACTIC_TYPE = "syntactic-translator";
 	
 	public TranslationManager(String url){
 		// Get IPSM URL from registry
@@ -92,11 +95,99 @@ public class TranslationManager {
 		ipsmUrl = getIpsmUrl();
 	}
 	
+	// SEMANTIC TRANSLATION METHODS
+	
+	public String semanticTranslation(String data, String alignName, String alignVersion) throws Exception{
+		String result = data;
+		HttpClient httpClient = HttpClientBuilder.create().build();
+		if(ipsmUrl!=null && !ipsmUrl.equals("")){
+		   // Call IPSM for semantic translation
+		   HttpPost ipsmPost = new HttpPost(ipsmUrl + "translation");
+		   JsonObject translationData = new JsonObject();
+		   JsonObject alignId = new JsonObject(); 
+		   alignId.addProperty("name", alignName);
+		   alignId.addProperty("version", alignVersion);
+		   JsonArray array = new JsonArray();
+		   array.add(alignId);
+		   translationData.add("alignIDs", array);
+		   translationData.addProperty("graphStr", result);
+		   HttpEntity translationEntity = new StringEntity(translationData.toString(), ContentType.APPLICATION_JSON);
+		   ipsmPost.setEntity(translationEntity);
+		   HttpResponse httpResponse = httpClient.execute(ipsmPost);
+		   int responseCode = httpResponse.getStatusLine().getStatusCode();
+		   if(responseCode==200){
+			   HttpEntity responseEntity = httpResponse.getEntity();
+			   if(responseEntity!=null) {
+				   JsonParser parser = new JsonParser();
+				   JsonObject responseBody = parser.parse(EntityUtils.toString(responseEntity)).getAsJsonObject();
+				   result = responseBody.get("graphStr").getAsString();
+			   }
+		   }else{
+				throw new Exception("Response code received from IPSM: " + responseCode);
+		   }
+		}else{
+		   logger.warn("Could not send data to IPSM: no URL. No semantic translation was performed.");
+		}
+		return result;
+	}
+		
+	private String getIpsmUrl() throws Exception{
+		String url = null;	
+		if(serviceRegistryUrl!=null){
+			// Use JSON server
+			HttpClient httpClient = HttpClientBuilder.create().build();
+			HttpGet httpGet = new HttpGet(serviceRegistryUrl + "?type=" + IPSM_TYPE);
+			HttpResponse httpResponse = httpClient.execute(httpGet);
+			int responseCode = httpResponse.getStatusLine().getStatusCode();
+			   if(responseCode==200){
+				   HttpEntity responseEntity = httpResponse.getEntity();
+				   if(responseEntity!=null) {
+					   JsonParser parser = new JsonParser();
+					   JsonObject target = parser.parse(EntityUtils.toString(responseEntity)).getAsJsonArray().get(0).getAsJsonObject();
+					   url = target.get("url").getAsString();
+				   }else {
+					   logger.warn("No semantic translation service found.");
+					   url = ipsmUrl; // null
+				   }
+			   }else{
+				   throw new Exception("Response code received from Registry: " + responseCode);
+			   }
+		}else{
+			url = ipsmUrl;
+		}
+		return url;
+	}
+	
+	
+	// SYNTACTIC TRANSLATION METHODS
+	
 	public String syntacticTranslation(String data, String type) throws Exception{
-		String response;
+		String response = null;
 		// SELECT SYNTACTIC TRANSLATOR USING THE PLATFORM TYPE IDENTIFIER (SAME VALUE AS IN THE BRIDGE)
-		// TODO: get syntactic translation web services URLs from the registry
-		switch(type){
+		// get syntactic translation web services URLs from the registry
+		String url = getSytacticTranslatorUrl(type);
+		if(url != null){
+			// Call syntactic translation web service
+			HttpClient httpClient = HttpClientBuilder.create().build();
+			HttpPost httpPost = new HttpPost( url + "/translate");
+			HttpEntity requestEntity = new StringEntity(data, ContentType.APPLICATION_JSON);
+			httpPost.setEntity(requestEntity);
+			HttpResponse httpResponse = httpClient.execute(httpPost);
+			HttpEntity responseEntity = httpResponse.getEntity();
+			int responseCode = httpResponse.getStatusLine().getStatusCode();
+			logger.info("Response code: " + httpResponse.getStatusLine().getStatusCode());
+			if(responseCode==200){
+				if(responseEntity!=null) {
+					JsonParser parser = new JsonParser();
+					response = EntityUtils.toString(responseEntity);
+				}
+			}else{
+				throw new Exception("Could not retrieve DB names. Response code received from Independent Data Storage: " + responseCode);
+			}			
+		}else{
+			logger.info("No syntactic translation service found. Old syntactic tranlation methods will be used instead.");
+			// Use old syntactic translation methods
+			switch(type){
        		case " http://inter-iot.eu/FIWARE":
        			response = translateFromFiware(data);
        			break;
@@ -109,9 +200,41 @@ public class TranslationManager {
        			// etc
        		default:
        			throw new Exception("Platform type not supported: " + type);	
-        } 
+			} 
+		}
 		return response;
 	}
+		
+	private String getSytacticTranslatorUrl(String type) throws Exception{
+		String url = null;	
+		if(serviceRegistryUrl!=null){
+			// Use JSON server
+			HttpClient httpClient = HttpClientBuilder.create().build();
+			HttpGet httpGet = new HttpGet(serviceRegistryUrl + "?type=" + SYNTACTIC_TYPE + "&platformType=" + URLEncoder.encode(type, "UTF-8") );
+			HttpResponse httpResponse = httpClient.execute(httpGet);
+			int responseCode = httpResponse.getStatusLine().getStatusCode();
+			   if(responseCode==200){
+				   HttpEntity responseEntity = httpResponse.getEntity();
+				   if(responseEntity!=null) {
+					   JsonParser parser = new JsonParser();
+					   JsonObject target = parser.parse(EntityUtils.toString(responseEntity)).getAsJsonArray().get(0).getAsJsonObject();
+					   url = target.get("url").getAsString();
+				   }else {
+					 //  throw new Exception("No syntactic translation service found for platform type " + type);
+					   logger.info("No syntactic translation service found for platform type " + type + ". Old syntactic tranlation methods will be used instead.");
+				   }
+			   }else{
+				   throw new Exception("Response code received from Registry: " + responseCode);
+			   }
+		}else{
+			// TODO: throw exception. For the moment, use old syntactic translation methods.
+			logger.info("Service Registry not found. Old syntactic tranlation methods will be used instead.");
+		}
+		return url;
+	}
+		
+	
+	///// OLD SYNTACTIC TRANSLATION METHODS
 	
 	private String translateFromFiware(String data) throws Exception{
 		// Translate data to JSON-LD
@@ -158,65 +281,5 @@ public class TranslationManager {
 	   return jsonMessage.toString();
 	}
 	
-	public String semanticTranslation(String data, String alignName, String alignVersion) throws Exception{
-		String result = data;
-		HttpClient httpClient = HttpClientBuilder.create().build();
-		if(ipsmUrl!=null && !ipsmUrl.equals("")){
-		   // Call IPSM for semantic translation
-		   HttpPost ipsmPost = new HttpPost(ipsmUrl + "translation");
-		   JsonObject translationData = new JsonObject();
-		   JsonObject alignId = new JsonObject(); 
-		   alignId.addProperty("name", alignName);
-		   alignId.addProperty("version", alignVersion);
-		   JsonArray array = new JsonArray();
-		   array.add(alignId);
-		   translationData.add("alignIDs", array);
-		   translationData.addProperty("graphStr", result);
-		   HttpEntity translationEntity = new StringEntity(translationData.toString(), ContentType.APPLICATION_JSON);
-		   ipsmPost.setEntity(translationEntity);
-		   HttpResponse httpResponse = httpClient.execute(ipsmPost);
-		   int responseCode = httpResponse.getStatusLine().getStatusCode();
-		   if(responseCode==200){
-			   HttpEntity responseEntity = httpResponse.getEntity();
-			   if(responseEntity!=null) {
-				   JsonParser parser = new JsonParser();
-				   JsonObject responseBody = parser.parse(EntityUtils.toString(responseEntity)).getAsJsonObject();
-				   result = responseBody.get("graphStr").getAsString();
-			   }
-		   }else{
-				throw new Exception("Response code received from IPSM: " + responseCode);
-		   }
-		}else{
-		   logger.warn("Could not send data to IPSM: no URL. No semantic translation was performed.");
-		}
-		return result;
-	}
-	
-	private String getIpsmUrl() throws Exception{
-		String url = null;	
-		if(serviceRegistryUrl!=null){
-			// Use JSON server
-			HttpClient httpClient = HttpClientBuilder.create().build();
-			HttpGet httpGet = new HttpGet(serviceRegistryUrl + "?type=" + IPSM_TYPE);
-			HttpResponse httpResponse = httpClient.execute(httpGet);
-			int responseCode = httpResponse.getStatusLine().getStatusCode();
-			   if(responseCode==200){
-				   HttpEntity responseEntity = httpResponse.getEntity();
-				   if(responseEntity!=null) {
-					   JsonParser parser = new JsonParser();
-					   JsonObject target = parser.parse(EntityUtils.toString(responseEntity)).getAsJsonArray().get(0).getAsJsonObject();
-					   url = target.get("url").getAsString();
-				   }else {
-					   logger.warn("No semantic translation service found.");
-					   url = ipsmUrl; // null
-				   }
-			   }else{
-				   throw new Exception("Response code received from Registry: " + responseCode);
-			   }
-		}else{
-			url = ipsmUrl;
-		}
-		return url;
-	}
 	
 }

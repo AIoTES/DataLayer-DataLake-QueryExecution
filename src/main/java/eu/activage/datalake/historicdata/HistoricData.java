@@ -230,6 +230,11 @@ public class HistoricData {
  		   String authStringEnc = new String(authEncBytes);
  		   String authHeader = "Basic " + authStringEnc;
  		   
+ 		  System.setProperty("http.proxyHost", "158.42.247.100");
+		  System.setProperty("http.proxyPort", "8080");
+		  System.setProperty("https.proxyHost",  "158.42.247.100");
+		  System.setProperty("https.proxyPort", "8080");
+ 		   
  		  HttpURLConnection con = (HttpURLConnection) uri.toURL().openConnection();
  			// optional default is GET
  		 con.setRequestMethod("GET");
