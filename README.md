@@ -31,10 +31,23 @@ Deploy JSON server on Docker:
 Example JSON database file: db.json
 
 
-Add **historic data web services** (including Independent Data Storage) under **"services"**. The id of the Independent Data Storage must be the name of the DB where the the historic data are stored and the type must be "independent-storage". For other historic data web services, use type="platform-historic". The attributes "DS" and "platform" correspond to the DS name and type of the  platform associated with this web service (for example, universAAL), respectively, and can be used as input parameters in the queries. The attribute "sources" contains the identifiers of the IoT platforms associated with a service. In the case of historic data web services, platform data is used to determine the syntactic and semantic translation of the retrieved data.
+Add **historical data web services** (including Independent Data Storage) under **"services"**. The id of the Independent Data Storage must be the name of the DB where the the historical data are stored and the type must be "independent-storage". For other historical data web services, use type="platform-historic". The attributes "DS" and "platform" correspond to the DS name and type of the  platform associated with this web service (for example, universAAL), respectively, and can be used as input parameters in the queries. The attribute "sources" contains the identifiers of the IoT platforms associated with a service. In the case of historical data web services, platform data is used to determine the syntactic and semantic translation of the retrieved data.
 
-Add **translation web services** under **"services"**. For the IPSM, use type="semantic-translator".
+Add **translation web services** under **"services"**. For the IPSM, use type="semantic-translator". Use type="syntactic-translator" for the syntactic translation web services. The attribute "platformType" identifies the platform type associated with a translator and should have the same value as in the SIL (for example, "http://inter-iot.eu/UniversAAL").
 
-Add platform data under **"platforms"**. The attribute "platformType" defines the syntactic translation of the data (supported values: "http://inter-iot.eu/UniversAAL", "http://inter-iot.eu/FIWARE" and "http://inter-iot.eu/sofia2"). The Alignment attributes define the semantic translation of the data.
+Add platform data under **"platforms"**. The attribute "platformType" defines the syntactic translation of the data. The Alignment attributes define the semantic translation of the data (only upstream alignments are used in historical data translation).
 
 
+### Syntactic translation web services
+
+You can deploy an available syntactic translation web service, which supports universAAL, Fiware and SOFIA2 syntax (associated platform type values: "http://inter-iot.eu/UniversAAL", "http://inter-iot.eu/FIWARE" and "http://inter-iot.eu/sofia2", respectively).
+
+
+Deploy the syntactic translator on Docker:
+
+`docker run -d -p 4568:4568 --name syntactic-translator docker-activage.satrd.es/syntactic-translator:0.0.1`
+
+
+### Semantic translation
+
+Deploy the IPSM to allow the semantic translation of the data.

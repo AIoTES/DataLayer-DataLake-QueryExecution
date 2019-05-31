@@ -217,29 +217,52 @@ public class DatabaseManager {
 		return type;
 	}
 	
-	public String[] getUptreamAlignment(String id) throws Exception{ // For semantic translation
-		//TODO: A channel may have two alignments. There should be an input and an ouput alignment in the registry
+	public String[] getUptreamInputAlignment(String id) throws Exception{ // For semantic translation
 		String[] alignment = null;
 		String platformId = getPlatformId(id);
 		JsonObject db = getPlatform(platformId);
 		if(db != null && !isIndependentDataStorage(id)){
 			alignment = new String[2];
-			alignment[0] = db.get("upstreamAlignmentName").getAsString();
-			alignment[1] = db.get("upstreamAlignmentVersion").getAsString();
+			alignment[0] = db.get("upstreamInputAlignmentName").getAsString();
+			alignment[1] = db.get("upstreamInputAlignmentVersion").getAsString();
 		}	
 		return alignment;
 	}
 	
-	public String[] getDownstreamAlignment(String id) throws Exception{
-		// Not needed for reading data
-		//TODO: A channel may have two alignments. There should be an input and an ouput alignment in the registry
+	public String[] getUptreamOutputAlignment(String id) throws Exception{ // For semantic translation
 		String[] alignment = null;
 		String platformId = getPlatformId(id);
 		JsonObject db = getPlatform(platformId);
 		if(db != null && !isIndependentDataStorage(id)){
 			alignment = new String[2];
-			alignment[0] = db.get("downstreamAlignmentName").getAsString();
-			alignment[1] = db.get("downstreamAlignmentVersion").getAsString();
+			alignment[0] = db.get("upstreamOutputAlignmentName").getAsString();
+			alignment[1] = db.get("upstreamOutputAlignmentVersion").getAsString();
+		}	
+		return alignment;
+	}
+	
+	public String[] getDownstreamInputAlignment(String id) throws Exception{
+		// Not needed for reading data
+		String[] alignment = null;
+		String platformId = getPlatformId(id);
+		JsonObject db = getPlatform(platformId);
+		if(db != null && !isIndependentDataStorage(id)){
+			alignment = new String[2];
+			alignment[0] = db.get("downstreamInputAlignmentName").getAsString();
+			alignment[1] = db.get("downstreamInputAlignmentVersion").getAsString();
+		}	
+		return alignment;
+	}
+	
+	public String[] getDownstreamOutputAlignment(String id) throws Exception{
+		// Not needed for reading data
+		String[] alignment = null;
+		String platformId = getPlatformId(id);
+		JsonObject db = getPlatform(platformId);
+		if(db != null && !isIndependentDataStorage(id)){
+			alignment = new String[2];
+			alignment[0] = db.get("downstreamOutputAlignmentName").getAsString();
+			alignment[1] = db.get("downstreamOutputAlignmentVersion").getAsString();
 		}	
 		return alignment;
 	}

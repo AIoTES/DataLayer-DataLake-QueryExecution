@@ -148,7 +148,8 @@ public class HistoricData {
     	
     	// For translation
     	String platformType = dbManager.getPlatformType(id);
-    	String[] alignment = dbManager.getUptreamAlignment(id);
+    	String[] inputAlignment = dbManager.getUptreamInputAlignment(id);
+    	String[] outputAlignment = dbManager.getUptreamOutputAlignment(id);
     	
     	// Authentication
     	String user = dbManager.getUser(id);
@@ -167,22 +168,28 @@ public class HistoricData {
  			   
  			   logger.info("Retrieved " + input.size() + " measurements from " + id);
  			   logger.info("Platform type: " + platformType);
- 			   if(alignment!=null && !alignment[0].isEmpty() && !alignment[1].isEmpty()) logger.info("Semantic translation using " + alignment[0] + " alignment.");
  			   logger.info("Processing data...");
  			   manager.setPlatformId(dbManager.getPlatformId(id));
  			   for(int i=0; i<input.size(); i++){
  				   String translatedData = null;
+ 				   String translatedData2 = null;
  				   // Syntactic translation
  				   String observation = manager.syntacticTranslation(input.get(i).getAsString(), platformType);
  				   
  				   // Semantic translation
  			 	   if(observation!=null) {
- 					   if(alignment!=null && !alignment[0].isEmpty() && !alignment[1].isEmpty())
- 						  translatedData = manager.semanticTranslation(observation, alignment[0], alignment[1]);
- 					   else translatedData = observation;
+ 					   if(inputAlignment!=null && !inputAlignment[0].isEmpty() && !inputAlignment[1].isEmpty()){
+ 						   logger.info("Semantic translation using " + inputAlignment[0] + " alignment.");
+ 						   translatedData = manager.semanticTranslation(observation, inputAlignment[0], inputAlignment[1]);
+ 					   } else translatedData = observation;
  				   }
- 				   
- 				   output.add(parser.parse(translatedData).getAsJsonObject());
+ 			 	   if(translatedData!=null) {
+					   if(outputAlignment!=null && !outputAlignment[0].isEmpty() && !outputAlignment[1].isEmpty()){
+						   logger.info("Semantic translation using " + outputAlignment[0] + " alignment.");
+						   translatedData2 = manager.semanticTranslation(translatedData, outputAlignment[0], outputAlignment[1]);
+					   } else translatedData2 = translatedData;
+				   }
+ 				   output.add(parser.parse(translatedData2).getAsJsonObject());
  			   }
  			  logger.info("Success");
  			   result = output;   
