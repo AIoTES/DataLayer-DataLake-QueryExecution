@@ -1,12 +1,8 @@
 package eu.activage.datalake.query;
 
-import java.net.URL;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Charsets;
-import com.google.common.io.Resources;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -42,10 +38,25 @@ public class QueryExecution {
     		// TODO	
     		logger.info("Get Schema");
     		
-    		// TODO: call some (future) service to get the requested schema
-    		// Get test data from a file
-    		URL test = Resources.getResource("test-schema.json");
-    		String schema = Resources.toString(test, Charsets.UTF_8);	
+    		// Return IDS DBs and tables
+			String schema;
+			try {
+				JsonParser parser = new JsonParser();
+				JsonObject reqBody = (JsonObject) parser.parse(request.body());
+				String db = reqBody.get("db").getAsString();
+				if(db != null && !db.isEmpty()){
+					// Return tables in a DB
+					schema = client.getSchema(db);
+				}else{
+					// Return all DBs and tables
+					schema = client.getSchema();
+				}
+			} catch (Exception e) {
+				response.status(400);
+                e.printStackTrace();
+                return e.getMessage();
+			}
+    		
     		response.header("Content-Type", "application/json;charset=UTF-8");
     		response.status(200);
     		return schema;

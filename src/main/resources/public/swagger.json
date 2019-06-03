@@ -55,6 +55,9 @@
               "$ref": "#/definitions/Schema"
             }
           },
+          "400": {
+            "description": "Invalid request."
+          },
           "500": {
             "description": "Server error."
           }
@@ -165,7 +168,7 @@
     "GetSchemaInput": {
       "type": "object",
       "properties": {
-        "entity": {
+        "db": {
           "type": "string"
         }
       }

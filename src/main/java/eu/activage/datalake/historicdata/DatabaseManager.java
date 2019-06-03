@@ -35,6 +35,11 @@ public class DatabaseManager {
 	final String SOURCES  = "sources";
 	final String DS = "DS";
 	final String PLATFORM = "platform";
+	final String PLATFORM_ID = "platformId";
+	final String PLATFORM_TYPE = "platformType";
+	final String USER = "user";
+	final String PASSWORD = "password";
+	
 	
 	// The current implementation uses JSON Server to store the service management data
 	
@@ -102,7 +107,8 @@ public class DatabaseManager {
 		if (platform!=null && ds==null){
 			// Get service Ids for each platform type
 			for(String param:platform){
-				HttpGet httpGet = new HttpGet(serviceRegistryUrl + "?" + PLATFORM + "=" + param);
+				URI requestUrl = new URIBuilder(serviceRegistryUrl).addParameter(PLATFORM, param).build();
+				HttpGet httpGet = new HttpGet(requestUrl);
 				HttpResponse httpResponse = httpClient.execute(httpGet);
 				int responseCode = httpResponse.getStatusLine().getStatusCode();
 				if(responseCode==200){
@@ -118,7 +124,8 @@ public class DatabaseManager {
 		} else if(platform == null && ds != null){
 			// Get service Ids for each DS
 			for(String param:ds){
-				HttpGet httpGet = new HttpGet(serviceRegistryUrl + "?" + DS + "=" + param);
+				URI requestUrl = new URIBuilder(serviceRegistryUrl).addParameter(DS, param).build();
+				HttpGet httpGet = new HttpGet(requestUrl);
 				HttpResponse httpResponse = httpClient.execute(httpGet);
 				int responseCode = httpResponse.getStatusLine().getStatusCode();
 			    if(responseCode==200){
@@ -175,7 +182,7 @@ public class DatabaseManager {
 			// Use mock registry
 			for(int i=0; i<dbs.size(); i++){
 				JsonObject db = dbs.get(i).getAsJsonObject();
-				String elementId = db.get("platformId").getAsString();
+				String elementId = db.get(PLATFORM_ID).getAsString();
 				if(platformId.equals(elementId)) target = db;
 			}
 		}
@@ -212,7 +219,7 @@ public class DatabaseManager {
 		String platformId = getPlatformId(id);
 		JsonObject db = getPlatform(platformId);
 		if(db != null && !isIndependentDataStorage(id)) {
-			type = db.get("platformType").getAsString();
+			type = db.get(PLATFORM_TYPE).getAsString();
 		}
 		return type;
 	}
@@ -270,15 +277,46 @@ public class DatabaseManager {
 	public String getUser(String id) throws Exception{
 		String response = null;
 		JsonObject db = getDb(id);
-		if(db != null) response = db.get("user").getAsString();	
+		if(db != null) response = db.get(USER).getAsString();	
 		return response;		
 	}
 	
 	public String getPassword(String id) throws Exception{
 		String response = null;
 		JsonObject db = getDb(id);
-		if(db != null) response = db.get("password").getAsString();	
+		if(db != null) response = db.get(PASSWORD).getAsString();	
 		return response;		
+	}
+	
+	public String[] getIdsUrl() throws Exception{
+		// Get URLs of the registered Independent Data Storage instances
+		List<String> response = new ArrayList<String>();
+		if(serviceRegistryUrl!=null){
+			// Use JSON server
+			HttpClient httpClient = HttpClientBuilder.create().build();
+			URI requestUrl = new URIBuilder(serviceRegistryUrl).addParameter(TYPE, INDEPENDENT_STORAGE).build();
+			HttpGet httpGet = new HttpGet(requestUrl);
+			HttpResponse httpResponse = httpClient.execute(httpGet);
+			int responseCode = httpResponse.getStatusLine().getStatusCode();
+			   if(responseCode==200){
+				   HttpEntity responseEntity = httpResponse.getEntity();
+				   if(responseEntity!=null) {
+					   JsonParser parser = new JsonParser();
+					   JsonArray res = parser.parse(EntityUtils.toString(responseEntity)).getAsJsonArray();
+					   for(int i=0; i<res.size(); i++){
+						   JsonObject target = res.get(i).getAsJsonObject();
+						   String url = target.get(URL).getAsString();
+						   // Return each URL once
+						   if(!response.contains(url)) response.add(url);
+					   }
+				   }
+			   }else{
+				   throw new Exception("Response code received from Registry: " + responseCode);
+			   }
+		}else{
+			throw new Exception("No service registry");
+		}
+		return response.toArray(new String[response.size()]);
 	}
 	
 }

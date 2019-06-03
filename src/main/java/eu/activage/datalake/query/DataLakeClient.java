@@ -90,4 +90,14 @@ class DataLakeClient {
 		return response;
 	}
 	
+	String getSchema(String db) throws Exception{
+		JsonObject schema = new JsonObject();
+		schema.add(db, historic.getIdsTables(db));
+		return schema.toString();
+	}
+	
+	String getSchema() throws Exception{
+		JsonObject schema = historic.getIdsDbsAndTables();
+		return schema.toString();
+	}
 }

@@ -246,9 +246,6 @@ public class HistoricData {
  		 con.setRequestProperty("Authorization",  authHeader);
  			
  		 int responseCode = con.getResponseCode();
-// 		 System.out.println("\nSending 'GET' request to URL : " + uri.toURL());
-// 		 System.out.println("Response Code : " + responseCode);
-
  		 if(responseCode>=200 && responseCode<=299){
  			BufferedReader in = new BufferedReader(
  	 		        new InputStreamReader(con.getInputStream()));
@@ -353,11 +350,14 @@ public class HistoricData {
   	   return uri;
    }
    
-   JsonArray getIdsTables(String db) throws Exception{
+   public JsonArray getIdsTables(String db) throws Exception{
+	   return getIdsTables(db, dbManager.getUrl(db));
+   }
+   
+   JsonArray getIdsTables(String db, String url) throws Exception{
 	   JsonArray response = null;
 	   JsonObject body = new JsonObject();
 	   body.addProperty("db", db);
-	   String url = dbManager.getUrl(db);
 	   if(!url.endsWith("/")) url = url + "/";
 	   HttpClient httpClient = HttpClientBuilder.create().build();
 	   HttpPost httpPost = new HttpPost( url + "independentStorage/tables");
@@ -371,7 +371,9 @@ public class HistoricData {
 			if(responseEntity!=null) {
 				JsonParser parser = new JsonParser();
 				String data = EntityUtils.toString(responseEntity);
-				response = parser.parse(data).getAsJsonObject().get("tables").getAsJsonArray();
+				JsonObject responseObject = parser.parse(data).getAsJsonObject();
+				if(!responseObject.entrySet().isEmpty()) response = responseObject.get("tables").getAsJsonArray();
+				else response = new JsonArray();
 			}
 	   }else{
 				throw new Exception("Could not retrieve DB names. Response code received from Independent Data Storage: " + responseCode);
@@ -379,4 +381,35 @@ public class HistoricData {
 	   return response;
    }
    
+   public JsonObject getIdsDbsAndTables() throws Exception{
+	   JsonObject response = new JsonObject();
+	   String[] urls = dbManager.getIdsUrl();
+	   HttpClient httpClient = HttpClientBuilder.create().build();
+	   for(String url:urls){
+		   if(!url.endsWith("/")) url = url + "/";
+		   HttpPost httpPost = new HttpPost( url + "independentStorage/databases");
+		   HttpResponse httpResponse = httpClient.execute(httpPost);
+		   HttpEntity responseEntity = httpResponse.getEntity();
+		   int responseCode = httpResponse.getStatusLine().getStatusCode();
+		   logger.info("Response code: " + httpResponse.getStatusLine().getStatusCode());
+		   if(responseCode==200){
+				if(responseEntity!=null) {
+					JsonParser parser = new JsonParser();
+					String data = EntityUtils.toString(responseEntity);
+					JsonArray databases = parser.parse(data).getAsJsonObject().get("databases").getAsJsonArray();
+					for(int i=0; i<databases.size(); i++){
+						String dbName = databases.get(i).getAsString();
+						// Remove _internal DB from results
+						if(!dbName.equals("_internal")){
+							JsonArray tables = getIdsTables(dbName, url);
+							response.add(dbName, tables);
+						}
+					}
+				}
+		   }else{
+					throw new Exception("Could not retrieve DB names. Response code received from Independent Data Storage: " + responseCode);
+		   }	
+	   }
+	   return response;
+   }
 }

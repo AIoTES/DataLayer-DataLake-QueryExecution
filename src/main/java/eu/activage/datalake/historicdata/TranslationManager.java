@@ -3,15 +3,15 @@ package eu.activage.datalake.historicdata;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URLEncoder;
+import java.net.URI;
 import java.util.Properties;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
-import org.apache.http.ParseException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClientBuilder;
@@ -136,7 +136,8 @@ public class TranslationManager {
 		if(serviceRegistryUrl!=null){
 			// Use JSON server
 			HttpClient httpClient = HttpClientBuilder.create().build();
-			HttpGet httpGet = new HttpGet(serviceRegistryUrl + "?type=" + IPSM_TYPE);
+			URI requestUrl = new URIBuilder(serviceRegistryUrl).addParameter("type", IPSM_TYPE).build();
+			HttpGet httpGet = new HttpGet(requestUrl);
 			HttpResponse httpResponse = httpClient.execute(httpGet);
 			int responseCode = httpResponse.getStatusLine().getStatusCode();
 			   if(responseCode==200){
@@ -178,7 +179,6 @@ public class TranslationManager {
 			logger.info("Response code: " + httpResponse.getStatusLine().getStatusCode());
 			if(responseCode==200){
 				if(responseEntity!=null) {
-					JsonParser parser = new JsonParser();
 					response = EntityUtils.toString(responseEntity);
 				}
 			}else{
@@ -210,7 +210,8 @@ public class TranslationManager {
 		if(serviceRegistryUrl!=null){
 			// Use JSON server
 			HttpClient httpClient = HttpClientBuilder.create().build();
-			HttpGet httpGet = new HttpGet(serviceRegistryUrl + "?type=" + SYNTACTIC_TYPE + "&platformType=" + URLEncoder.encode(type, "UTF-8") );
+			URI requestUrl = new URIBuilder(serviceRegistryUrl).addParameter("type", SYNTACTIC_TYPE).addParameter("platformType", type).build();
+			HttpGet httpGet = new HttpGet(requestUrl);
 			HttpResponse httpResponse = httpClient.execute(httpGet);
 			int responseCode = httpResponse.getStatusLine().getStatusCode();
 			   if(responseCode==200){
