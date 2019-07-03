@@ -76,6 +76,7 @@ public class TranslationManager {
 			// load a properties file
 			prop.load(input);
 			ipsmUrl = prop.getProperty("ipsm-url");
+			if (!ipsmUrl.endsWith("/")) ipsmUrl = ipsmUrl + "/";
 		} catch (IOException e) {
 			e.printStackTrace();
 		} finally {
@@ -146,6 +147,7 @@ public class TranslationManager {
 					   JsonParser parser = new JsonParser();
 					   JsonObject target = parser.parse(EntityUtils.toString(responseEntity)).getAsJsonArray().get(0).getAsJsonObject();
 					   url = target.get("url").getAsString();
+					   if (!url.endsWith("/")) url = url + "/";
 				   }else {
 					   logger.warn("No semantic translation service found.");
 					   url = ipsmUrl; // null
