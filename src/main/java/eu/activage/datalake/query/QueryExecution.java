@@ -61,7 +61,7 @@ public class QueryExecution {
     		response.status(200);
     		return schema;
     	});
-    	
+    	    	    	
     	spark.post("/query", (request, response) -> {
     		JsonObject responseBody = new JsonObject();    			   					    			
     		try {
@@ -105,6 +105,29 @@ public class QueryExecution {
    		 	response.status(200);
    		 	return result.toString();
     	});
+    	
+    	//HTTP OPTIONS added for integration with nodejs applications
+    	spark.options("/getSchema", (request, response) -> {   
+    		response.header("Allow", "POST, OPTIONS");
+    		response.header("Content-Type", "application/json;charset=UTF-8");
+    		response.status(200);
+    		return "";
+        });
+    	
+    	spark.options("/query", (request, response) -> {   
+    		response.header("Allow", "POST, OPTIONS");
+    		response.header("Content-Type", "application/json;charset=UTF-8");
+    		response.status(200);
+    		return "";
+        });
+    	
+    	spark.options("/querytranslation", (request, response) -> {   
+    		response.header("Allow", "POST, OPTIONS");
+    		response.header("Content-Type", "application/json;charset=UTF-8");
+    		response.status(200);
+    		return "";
+        });
+    	
     }
     
     public void stop() {
