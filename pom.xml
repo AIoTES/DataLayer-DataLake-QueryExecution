@@ -18,44 +18,11 @@
              <enabled>true</enabled>
          </snapshots>
          <url>https://oss.sonatype.org/content/groups/public/</url>
-     </repository>
-     
-     <!-- INTER-IoT - FOR SYNTACTIC TRANSLATION - REMOVE WHEN SSIL IS AVAILABLE -->
-     <repository>
-          <id>nexus.inter-iot.eu-releases</id>
-          <url>http://nexus.inter-iot.eu/repository/maven-releases/</url>
-      </repository>
-      <repository>
-          <id>nexus.inter-iot.eu-snapshots</id>
-          <url>http://nexus.inter-iot.eu/repository/maven-snapshots/</url>
-          <snapshots>
-              <updatePolicy>always</updatePolicy>
-          </snapshots>
-      </repository>
-      <!-- INTER-IoT END -->
+     </repository> 
      
   </repositories>
 
   <dependencies>
-  	
-  	 <!-- INTER-IoT - FOR SYNTACTIC TRANSLATION - REMOVE WHEN SSIL IS AVAILABLE -->
-	  <dependency>
-		<groupId>eu.inter-iot.translators</groupId>
-		<artifactId>syntactic-translators</artifactId>
-		<version>1.0</version>
-	  </dependency>
-	  <dependency>
-		<groupId>eu.interiot.intermw</groupId>
-		<artifactId>mw.commons.impl</artifactId>
-		<version>2.3.0</version>
-		<scope>test</scope>
-	  </dependency>
-	  <dependency>
-		<groupId>eu.interiot.intermw</groupId>
-		<artifactId>mw.comm.broker.api</artifactId>
-		<version>2.3.0</version>
-	  </dependency>
-  	<!-- INTER-IoT END -->
   	
   	<dependency>
         <groupId>junit</groupId>

@@ -162,8 +162,11 @@ public class HistoricData {
     	// Translation of each individual message
  	    if(!resultRaw.isEmpty()){
  		   if(platformType!=null && !platformType.equals("")){
- 			   // Syntactic translation
- 			   JsonArray input = parser.parse(resultRaw).getAsJsonArray();
+ 			   // Syntactic translation (returns array of JSON-LD messages)
+ 			  String jsonldData = manager.syntacticTranslation(resultRaw, platformType);
+ 			   
+// 			   JsonArray input = parser.parse(resultRaw).getAsJsonArray();
+ 			   JsonArray input = parser.parse(jsonldData).getAsJsonArray();
  			   JsonArray output = new JsonArray();
  			   
  			   logger.info("Retrieved " + input.size() + " measurements from " + id);
@@ -173,8 +176,9 @@ public class HistoricData {
  			   for(int i=0; i<input.size(); i++){
  				   String translatedData = null;
  				   String translatedData2 = null;
- 				   // Syntactic translation
- 				   String observation = manager.syntacticTranslation(input.get(i).getAsString(), platformType);
+ 				   
+// 				   String observation = manager.syntacticTranslation(input.get(i).getAsString(), platformType);
+ 				   String observation = input.get(i).getAsJsonObject().toString();
  				   
  				   // Semantic translation
  			 	   if(observation!=null) {

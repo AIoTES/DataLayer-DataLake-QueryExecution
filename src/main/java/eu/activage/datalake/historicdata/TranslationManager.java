@@ -1,6 +1,5 @@
 package eu.activage.datalake.historicdata;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -16,25 +15,12 @@ import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.ModelFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-
-import eu.interiot.message.Message;
-import eu.interiot.message.MessageMetadata;
-import eu.interiot.message.MessagePayload;
-import eu.interiot.message.ID.EntityID;
-import eu.interiot.message.managers.URI.URIManagerMessageMetadata;
-import eu.interiot.message.metadata.PlatformMessageMetadata;
-import eu.interiot.services.syntax.FIWAREv2Translator;
-import eu.interiot.services.syntax.Sofia2Translator;
 
 public class TranslationManager {
 	
@@ -184,25 +170,10 @@ public class TranslationManager {
 					response = EntityUtils.toString(responseEntity);
 				}
 			}else{
-				throw new Exception("Could not retrieve DB names. Response code received from Independent Data Storage: " + responseCode);
+				throw new Exception("Could translate data. Response code received from syntactic translation web service: " + responseCode);
 			}			
 		}else{
-			logger.info("No syntactic translation service found. Old syntactic tranlation methods will be used instead.");
-			// Use old syntactic translation methods
-			switch(type){
-       		case " http://inter-iot.eu/FIWARE":
-       			response = translateFromFiware(data);
-       			break;
-       		case "http://inter-iot.eu/sofia2":
-       			response = translateFromSofia(data);
-       			break;
-       		case "http://inter-iot.eu/UniversAAL":
-       			response = translateFromUniversaal(data);
-       			break;
-       			// etc
-       		default:
-       			throw new Exception("Platform type not supported: " + type);	
-			} 
+			throw new Exception("No syntactic translation service found for platform type " + type);
 		}
 		return response;
 	}
@@ -223,8 +194,8 @@ public class TranslationManager {
 					   JsonObject target = parser.parse(EntityUtils.toString(responseEntity)).getAsJsonArray().get(0).getAsJsonObject();
 					   url = target.get("url").getAsString();
 				   }else {
-					 //  throw new Exception("No syntactic translation service found for platform type " + type);
-					   logger.info("No syntactic translation service found for platform type " + type + ". Old syntactic tranlation methods will be used instead.");
+					   throw new Exception("No syntactic translation service found for platform type " + type);
+					 //  logger.info("No syntactic translation service found for platform type " + type + ". Old syntactic tranlation methods will be used instead.");
 				   }
 			   }else{
 				   throw new Exception("Response code received from Registry: " + responseCode);
@@ -235,54 +206,5 @@ public class TranslationManager {
 		}
 		return url;
 	}
-		
-	
-	///// OLD SYNTACTIC TRANSLATION METHODS
-	
-	private String translateFromFiware(String data) throws Exception{
-		// Translate data to JSON-LD
-//        logger.debug("Translate data from Fiware...  ");
-        FIWAREv2Translator translator2 = new FIWAREv2Translator();
-        Model transformedModel = translator2.toJenaModelTransformed(data);
-        // TODO: Change identifier (hasId). Use the same format as the messages from the bridge
-        // Create Inter-IoT message
-	    return createObservationMessage(transformedModel);
-	}
-	
-	private String translateFromSofia(String data) throws Exception{
-		// Translate data to JSON-LD
-//        logger.debug("Translate data from SOFIA2...  ");
-        Sofia2Translator translator = new Sofia2Translator();
-        Model transformedModel = translator.toJenaModelTransformed(data);
-        // Create Inter-IoT message
-	    return createObservationMessage(transformedModel);
-	}
-	
-	private String translateFromUniversaal(String data) throws IOException{
-		// Transform data to JSON-LD
-//        logger.debug("Translate data from universAAL...  ");
-	    Model eventModel = ModelFactory.createDefaultModel();
-	    eventModel.read(new ByteArrayInputStream(data.getBytes()), null, "TURTLE");
-	    // Create Inter-IoT message
-	    return createObservationMessage(eventModel);
-	}
-	
-	private String createObservationMessage(Model model) throws IOException{
-	   // ADD METADATA GRAPH
-	   Message callbackMessage = new Message();
-	   // Metadata
-	   PlatformMessageMetadata metadata = new MessageMetadata().asPlatformMessageMetadata();
-	   metadata.initializeMetadata();
-	   metadata.addMessageType(URIManagerMessageMetadata.MessageTypesEnum.OBSERVATION);
-	   if(!platformId.isEmpty()) metadata.setSenderPlatformId(new EntityID(platformId)); // Add senderPlatformId
-	   callbackMessage.setMetadata(metadata);     
-	   //Finish creating the message
-	   MessagePayload messagePayload = new MessagePayload(model);
-	   callbackMessage.setPayload(messagePayload);          
-	   ObjectMapper mapper = new ObjectMapper();
-	   ObjectNode jsonMessage = (ObjectNode) mapper.readTree(callbackMessage.serializeToJSONLD());
-	   return jsonMessage.toString();
-	}
-	
 	
 }
