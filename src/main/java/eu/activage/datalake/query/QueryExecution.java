@@ -108,22 +108,31 @@ public class QueryExecution {
     	
     	//HTTP OPTIONS added for integration with nodejs applications
     	spark.options("/getSchema", (request, response) -> {   
+    		response.header("Access-Control-Allow-Origin", "*");
+    		response.header("Access-Control-Allow-Methods", "POST");
+    		response.header("Access-Control-Allow-Headers", "Origin, Content-Type, Authorization, Accept");
     		response.header("Allow", "POST, OPTIONS");
-    		response.header("Content-Type", "application/json;charset=UTF-8");
+//    		response.header("Content-Type", "application/json;charset=UTF-8");
     		response.status(200);
     		return "";
         });
     	
     	spark.options("/query", (request, response) -> {   
+    		response.header("Access-Control-Allow-Origin", "*");
+    		response.header("Access-Control-Allow-Methods", "POST");
+    		response.header("Access-Control-Allow-Headers", "Origin, Content-Type, Authorization, Accept");
     		response.header("Allow", "POST, OPTIONS");
-    		response.header("Content-Type", "application/json;charset=UTF-8");
+//    		response.header("Content-Type", "application/json;charset=UTF-8");
     		response.status(200);
     		return "";
         });
     	
     	spark.options("/querytranslation", (request, response) -> {   
+    		response.header("Access-Control-Allow-Origin", "*");
+    		response.header("Access-Control-Allow-Methods", "POST");
+    		response.header("Access-Control-Allow-Headers", "Origin, Content-Type, Authorization, Accept");
     		response.header("Allow", "POST, OPTIONS");
-    		response.header("Content-Type", "application/json;charset=UTF-8");
+//    		response.header("Content-Type", "application/json;charset=UTF-8");
     		response.status(200);
     		return "";
         });
