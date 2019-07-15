@@ -55,38 +55,42 @@ public class HistoricData {
     	dbManager = new DatabaseManager();
     }
       
-    public JsonArray getData(String platform, String deviceId, String deviceType, String fromDate, String toDate) throws Exception{
+    public JsonArray getData(String platform, String deviceId, String deviceType, String fromDate, String toDate){
     	/*
          * Create and execute call to web service
          * */
 		JsonArray response = null;
 		
 		logger.info("Retrieving historic data from platform: " + platform);
-		
-		if(dbManager.isIndependentDataStorage(platform)){
-			// Table = deviceType
-			if(deviceType == null){
-				// If deviceType is empty, list all tables and send the same query to all of them.
-				// get tables from Independent Data Storage
-				JsonArray types = getIdsTables(platform);
-				if(types.size() > 0){
-					response = new JsonArray();
-					for(int i=0; i<types.size(); i++){
-						deviceType = types.get(i).getAsString();
-						String query = createIdsQuery(deviceType, deviceId, fromDate, toDate);
-						response.addAll(getFromIds(platform, deviceType, query));
+		try{
+			if(dbManager.isIndependentDataStorage(platform)){
+				// Table = deviceType
+				if(deviceType == null){
+					// If deviceType is empty, list all tables and send the same query to all of them.
+					// get tables from Independent Data Storage
+					JsonArray types = getIdsTables(platform);
+					if(types.size() > 0){
+						response = new JsonArray();
+						for(int i=0; i<types.size(); i++){
+							deviceType = types.get(i).getAsString();
+							String query = createIdsQuery(deviceType, deviceId, fromDate, toDate);
+							response.addAll(getFromIds(platform, deviceType, query));
+						}
 					}
+					
+				}else{
+					// A device type was specified
+					String query = createIdsQuery(deviceType, deviceId, fromDate, toDate); 
+					response = getFromIds(platform, deviceType, query);
 				}
-				
 			}else{
-				// A device type was specified
-				String query = createIdsQuery(deviceType, deviceId, fromDate, toDate); 
-				response = getFromIds(platform, deviceType, query);
+				response = getFromPlatform(platform, deviceId, deviceType, fromDate, toDate);
 			}
-		}else{
-			response = getFromPlatform(platform, deviceId, deviceType, fromDate, toDate);
+		}catch(Exception e){
+			logger.error("Error: " + e.getMessage());
+			e.printStackTrace();
 		}
-								
+		
 		return response;
 	}
     
@@ -172,6 +176,10 @@ public class HistoricData {
  			   
  			   logger.info("Retrieved " + input.size() + " measurements from " + id);
  			   logger.info("Platform type: " + platformType);
+ 			   if(inputAlignment!=null && !inputAlignment[0].isEmpty() && !inputAlignment[1].isEmpty())
+				   logger.info("Semantic translation using " + inputAlignment[0] + " alignment.");
+ 			   if(outputAlignment!=null && !outputAlignment[0].isEmpty() && !outputAlignment[1].isEmpty())
+				   logger.info("Semantic translation using " + outputAlignment[0] + " alignment.");
  			   logger.info("Processing data...");
  			   manager.setPlatformId(dbManager.getPlatformId(id));
  			   for(int i=0; i<input.size(); i++){
@@ -184,13 +192,11 @@ public class HistoricData {
  				   // Semantic translation
  			 	   if(observation!=null) {
  					   if(inputAlignment!=null && !inputAlignment[0].isEmpty() && !inputAlignment[1].isEmpty()){
- 						   logger.info("Semantic translation using " + inputAlignment[0] + " alignment.");
  						   translatedData = manager.semanticTranslation(observation, inputAlignment[0], inputAlignment[1]);
  					   } else translatedData = observation;
  				   }
  			 	   if(translatedData!=null) {
 					   if(outputAlignment!=null && !outputAlignment[0].isEmpty() && !outputAlignment[1].isEmpty()){
-						   logger.info("Semantic translation using " + outputAlignment[0] + " alignment.");
 						   translatedData2 = manager.semanticTranslation(translatedData, outputAlignment[0], outputAlignment[1]);
 					   } else translatedData2 = translatedData;
 				   }

@@ -164,7 +164,7 @@ public class TranslationManager {
 			HttpResponse httpResponse = httpClient.execute(httpPost);
 			HttpEntity responseEntity = httpResponse.getEntity();
 			int responseCode = httpResponse.getStatusLine().getStatusCode();
-			logger.info("Response code: " + httpResponse.getStatusLine().getStatusCode());
+//			logger.info("Response code: " + httpResponse.getStatusLine().getStatusCode());
 			if(responseCode==200){
 				if(responseEntity!=null) {
 					response = EntityUtils.toString(responseEntity);
@@ -201,8 +201,7 @@ public class TranslationManager {
 				   throw new Exception("Response code received from Registry: " + responseCode);
 			   }
 		}else{
-			// TODO: throw exception. For the moment, use old syntactic translation methods.
-			logger.info("Service Registry not found. Old syntactic tranlation methods will be used instead.");
+			throw new Exception("No syntactic translation service found for platform type " + type);
 		}
 		return url;
 	}

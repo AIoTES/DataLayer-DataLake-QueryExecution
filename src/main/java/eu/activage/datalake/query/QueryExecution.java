@@ -58,6 +58,9 @@ public class QueryExecution {
 			}
     		
     		response.header("Content-Type", "application/json;charset=UTF-8");
+    		response.header("Access-Control-Allow-Origin", "*");
+    		response.header("Access-Control-Allow-Methods", "POST");
+    		response.header("Access-Control-Allow-Headers", "Origin, Content-Type, Authorization, Accept");
     		response.status(200);
     		return schema;
     	});
@@ -82,6 +85,9 @@ public class QueryExecution {
             }
     		
    		 	response.header("Content-Type", "application/json;charset=UTF-8");
+   		 	response.header("Access-Control-Allow-Origin", "*");
+   		 	response.header("Access-Control-Allow-Methods", "POST");
+   		 	response.header("Access-Control-Allow-Headers", "Origin, Content-Type, Authorization, Accept");
    		 	response.status(200);
    		 	return responseBody.toString();
     	});
@@ -102,6 +108,9 @@ public class QueryExecution {
                 return e.getMessage();
             }
    		 	response.header("Content-Type", "application/json;charset=UTF-8");
+   		 	response.header("Access-Control-Allow-Origin", "*");
+   		 	response.header("Access-Control-Allow-Methods", "POST");
+ 			response.header("Access-Control-Allow-Headers", "Origin, Content-Type, Authorization, Accept");
    		 	response.status(200);
    		 	return result.toString();
     	});

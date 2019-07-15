@@ -13,6 +13,8 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
@@ -39,7 +41,7 @@ public class DatabaseManager {
 	final String PLATFORM_TYPE = "platformType";
 	final String USER = "user";
 	final String PASSWORD = "password";
-	
+	private final Logger logger = LoggerFactory.getLogger(DatabaseManager.class);
 	
 	// The current implementation uses JSON Server to store the service management data
 	
@@ -114,7 +116,9 @@ public class DatabaseManager {
 				if(responseCode==200){
 				   HttpEntity responseEntity = httpResponse.getEntity();
 				   if(responseEntity!=null) {
-					   target.addAll(parser.parse(EntityUtils.toString(responseEntity)).getAsJsonArray());
+					   JsonArray responseArray = parser.parse(EntityUtils.toString(responseEntity)).getAsJsonArray();
+					   if(responseArray.size() > 0)  target.addAll(responseArray);
+					   else logger.error("Platform " + param + " not found in the registry"); 
 				   } 
 				}else{
 					throw new Exception("Response code received from Registry: " + responseCode);
@@ -131,9 +135,11 @@ public class DatabaseManager {
 			    if(responseCode==200){
 					HttpEntity responseEntity = httpResponse.getEntity();
 					if(responseEntity!=null) {
-						target.addAll(parser.parse(EntityUtils.toString(responseEntity)).getAsJsonArray());
-					} 
-				}else{
+						 JsonArray responseArray = parser.parse(EntityUtils.toString(responseEntity)).getAsJsonArray();
+						 if(responseArray.size() > 0) target.addAll(responseArray);
+						 else logger.error("DS " + param + " not found in the registry");
+					}  
+			    }else{
 					throw new Exception("Response code received from Registry: " + responseCode);
 				}
 			}
