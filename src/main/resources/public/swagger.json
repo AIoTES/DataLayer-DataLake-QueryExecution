@@ -16,6 +16,11 @@
     }
   },
   "basePath": "/",
+  "tags": [
+    {
+      "name": "Data Integration Engine"
+    }
+  ],
   "schemes": [
     "http",
     "https"
@@ -29,7 +34,10 @@
   "paths": {
     "/getSchema": {
       "post": {
-        "summary": "Get Schema",
+        "tags": [
+          "Data Integration Engine"
+        ],
+		"summary": "Get Schema",
         "description": "",
         "operationId": "getSchema",
         "consumes": [
@@ -66,6 +74,9 @@
     },
     "/query": {
       "post": {
+	    "tags": [
+          "Data Integration Engine"
+        ],
         "summary": "Execute query",
         "description": "",
         "operationId": "query",
@@ -103,6 +114,9 @@
     },
     "/querytranslation": {
       "post": {
+	    "tags": [
+          "Data Integration Engine"
+        ],
         "summary": "Translate a JSON query into calls to the respective web services",
         "description": "",
         "operationId": "queryTranslation",
