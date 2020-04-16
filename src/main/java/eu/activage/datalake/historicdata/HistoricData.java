@@ -76,6 +76,9 @@ public class HistoricData {
 							String query = createIdsQuery(deviceType, deviceId, fromDate, toDate);
 							response.addAll(getFromIds(platform, deviceType, query));
 						}
+					}else{
+						// No tables exist in the independent data storage (table name is needed for queries)
+						response = new JsonArray();
 					}
 					
 				}else{
@@ -111,6 +114,9 @@ public class HistoricData {
 						String type = types.get(i).getAsString();
 						responseUri[i] = createIdsCall(url, platform, deviceId, type, fromDate, toDate);
 					}
+				}else{
+					// No tables exist in the independent data storage (table name is needed for queries)
+					responseUri = new URI[1];
 				}
     		}else{
     			responseUri = new URI[1];
@@ -122,22 +128,24 @@ public class HistoricData {
 		}
     	
     	for(int i=0; i<responseUri.length; i++){
-    		JsonObject responseObject = new JsonObject();
-        	responseObject.addProperty("url", responseUri[i].toString());
-        	JsonObject headers = new JsonObject();
-        	
-        	String user = dbManager.getUser(platform);
-        	String password = dbManager.getPassword(platform);
-        	
-        	if(user!=null && !user.equals("") && password!=null && !password.equals("")){
-        		String authString = user + ":" + password;
-        		byte[] authEncBytes = Base64.getEncoder().encode(authString.getBytes("UTF-8"));
-        		String authStringEnc = new String(authEncBytes);
-        		String authHeader = "Basic " + authStringEnc;
-        		headers.addProperty("Authentication", authHeader);
-        	}
-        	responseObject.add("headers", headers);
-        	response.add(responseObject);
+    		if(responseUri[i]!=null){
+    			JsonObject responseObject = new JsonObject();
+            	responseObject.addProperty("url", responseUri[i].toString());
+            	JsonObject headers = new JsonObject();
+            	
+            	String user = dbManager.getUser(platform);
+            	String password = dbManager.getPassword(platform);
+            	
+            	if(user!=null && !user.equals("") && password!=null && !password.equals("")){
+            		String authString = user + ":" + password;
+            		byte[] authEncBytes = Base64.getEncoder().encode(authString.getBytes("UTF-8"));
+            		String authStringEnc = new String(authEncBytes);
+            		String authHeader = "Basic " + authStringEnc;
+            		headers.addProperty("Authentication", authHeader);
+            	}
+            	responseObject.add("headers", headers);
+            	response.add(responseObject);
+    		}
     	}
     	return response;
     }
@@ -388,7 +396,7 @@ public class HistoricData {
 			}
 	   }else{
 				throw new Exception("Could not retrieve DB names. Response code received from Independent Data Storage: " + responseCode);
-	   }	
+	   }
 	   return response;
    }
    

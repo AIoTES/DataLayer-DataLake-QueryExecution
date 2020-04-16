@@ -35,7 +35,7 @@ class DataLakeClient {
 		// It's possible that a single query translates to multiple calls
 		JsonArray apiCalls = new JsonArray();
 		String[] dbIds = dbManager.getDBIds(q.getDs(),q.getplatforms());
-		logger.info("Query parameterms: " + q.toString()); //DEBUG
+		logger.info("Query parameters: " + q.toString()); //DEBUG
 		String[] columns = q.getDeviceTypes();
 		if(columns== null) columns = q.getDeviceIds();
 		
