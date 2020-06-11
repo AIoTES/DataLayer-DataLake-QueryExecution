@@ -1,11 +1,17 @@
 # Query Execution component
-### Run query execution component
+This component is part of the Data Lake. The query component has the purpose of perform, manage and orchestrate the steps needed to access the data contained in the data lake as if it were contained in a single database.
 
+
+## Build from sources
+### JVM
+Build using Maven:
 
 ```
 mvn clean compile assembly:single
 ```
 
+
+Run query execution component:
 
 `java -jar target\QueryExecution-0.0.1-SNAPSHOT-jar-with-dependencies.jar {service registry prototype URL} {TCP port}`
 
@@ -13,6 +19,22 @@ mvn clean compile assembly:single
 Default TCP port for the REST API: 4570
 
 Swagger description of the API:   http://localhost:4570/swagger
+
+
+
+### Docker
+Build Docker image:
+
+`docker build --no-cache -t docker-activage.satrd.es/dl-query-component:<version> .`
+
+
+Run in Docker:
+
+`docker run -d -p {TCP port}:4570 --name query-component docker-activage.satrd.es/dl-query-component:<version> {service registry prototype URL}`
+
+
+## Dependencies
+The Data Lake Query component depends on the following components:
 
 
 ### Web service registry prototype
@@ -50,4 +72,4 @@ Deploy the syntactic translator on Docker:
 
 ### Semantic translation
 
-Deploy the IPSM to allow the semantic translation of the data.
+Deploy the IPSM to allow the semantic translation of the data (the IPSM is part of the SIL deployment).
