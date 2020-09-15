@@ -7,15 +7,15 @@ This component is part of the Data Lake. The query component has the purpose of 
 
 This component is deployed as part of the Data Lake stack.
 
-The query execution component retrieves data from one or more web services that provide historical information of the IoT Platforms. The supported data sources are the [Independent Data Storage](https://git.activageproject.eu/Data_Analytics/DL-Independent_data_storage) and standardized [data retrieval web services](https://git.activageproject.eu/Data_Analytics/DL-Query_execution/wiki/DS+data+retrieval+web+services). The query component uses a JSON object as input and returns the information in the common AIoTES JSON-LD format.
+The query execution component retrieves data from one or more web services that provide historical information of the IoT Platforms. The supported data sources are the [Independent Data Storage](https://github.com/AIoTES/DataLayer-DataLake-IDS) and standardized [data retrieval web services](https://github.com/AIoTES/DataLayer-DataLake-QueryExecution/wiki/DS-data-retrieval-web-services). The query component uses a JSON object as input and returns the information in the common AIoTES JSON-LD format.
 
 
 **Query**
 
-The query request allows retrieving historical data from the available sources. The Query Execution component will identify the proper data sources and retrieve the data. It will make use of the proper [syntactic](https://git.activageproject.eu/Data_Analytics/DL-Query_execution/wiki/Syntactic+translation+web+services) and [semantic](https://github.com/activage/AIOTES-2.0/wiki/Semantic-Interoperability-Layer#IPSM) translation web services to translate the data into the common AIoTES data format and ontology.
+The query request allows retrieving historical data from the available sources. The Query Execution component will identify the proper data sources and retrieve the data. It will make use of the proper [syntactic](https://github.com/AIoTES/DataLayer-DataLake-QueryExecution/wiki/Syntactic-translation-web-services) and [semantic](https://github.com/activage/AIOTES-2.0/wiki/Semantic-Interoperability-Layer#IPSM) translation web services to translate the data into the common AIoTES data format and ontology.
 
 
-The historical data and translation web services must be configured using the [service registry prototype](https://git.activageproject.eu/Data_Analytics/DL-Query_execution/wiki/Service+Registry+prototype). An example of the service registry prototype content is provided in the db.json file.
+The historical data and translation web services must be configured using the [service registry prototype](https://github.com/AIoTES/DataLayer-DataLake-QueryExecution/wiki/Service-Registry-prototype). An example of the service registry prototype content is provided in the db.json file.
 
 
 An example of a query in JSON format:
@@ -136,7 +136,7 @@ Add platform data under **"platforms"**. The attribute "platformType" defines th
 
 #### Syntactic translation web services
 
-You can deploy an available [syntactic translation web service](https://git.activageproject.eu/AIOTES_integration/mwtranslator), which supports universAAL, Fiware and SOFIA2 syntax (associated platform type values: "http://inter-iot.eu/UniversAAL", "http://inter-iot.eu/FIWARE" and "http://inter-iot.eu/sofia2", respectively).
+You can deploy an available [syntactic translation web service](https://github.com/AIoTES/SIL-Support-MWtranslator), which supports universAAL, Fiware and SOFIA2 syntax (associated platform type values: "http://inter-iot.eu/UniversAAL", "http://inter-iot.eu/FIWARE" and "http://inter-iot.eu/sofia2", respectively).
 
 
 Deploy the syntactic translator on Docker:
@@ -152,7 +152,7 @@ Deploy the IPSM to allow the semantic translation of the data (the IPSM is part 
 
 ## Further information
 
-[Full description of the component API](https://git.activageproject.eu/Data_Analytics/DL-Query_execution/wiki/Query+execution+component+API)
+[Full description of the component API](https://github.com/AIoTES/DataLayer-DataLake-QueryExecution/wiki/Query-execution-component-API)
 
 
 
