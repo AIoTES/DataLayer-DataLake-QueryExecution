@@ -52,7 +52,7 @@ This product uses the following software with corresponding licenses:
         SLF4J API Module (org.slf4j:slf4j-api:1.7.5 - http://www.slf4j.org) distributed under MIT License
         SLF4J Simple Binding (org.slf4j:slf4j-simple:1.7.5 - http://www.slf4j.org) distributed under MIT License
 
-II. License Summary
+III. License Summary
 
 - Apache License, Version 2.0
 - CDDL + GPLv2 with classpath exception

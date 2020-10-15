@@ -75,7 +75,7 @@ POST /getSchema
 
 Build Docker image:
 
-`docker build --no-cache -t docker-activage.satrd.es/dl-query-component:<version> .`
+`docker build --no-cache -t aiotesdocker/datalayer-datalake-queryexecution:<version> .`
 
 
 
@@ -96,7 +96,7 @@ Run query execution component:
 
 You can run locally the Docker image using:
 
-`docker run -d -p {TCP port}:4570 --name query-component docker-activage.satrd.es/dl-query-component:<version> {service registry prototype URL}`
+`docker run -d -p {TCP port}:4570 --name query-component aiotesdocker/datalayer-datalake-queryexecution:<version> {service registry prototype URL}`
 
 
 
@@ -141,7 +141,7 @@ You can deploy an available [syntactic translation web service](https://github.c
 
 Deploy the syntactic translator on Docker:
 
-`docker run -d -p 4568:4568 --name syntactic-translator docker-activage.satrd.es/syntactic-translator:0.0.1`
+`docker run -d -p 4568:4568 --name syntactic-translator aiotesdocker/sil-support-mwtranslator`
 
 
 #### Semantic translation
@@ -154,6 +154,8 @@ Deploy the IPSM to allow the semantic translation of the data (the IPSM is part 
 
 [Full description of the component API](https://github.com/AIoTES/DataLayer-DataLake-QueryExecution/wiki/Query-execution-component-API)
 
+
+[Available Docker images](https://hub.docker.com/r/aiotesdocker/datalayer-datalake-queryexecution)
 
 
 ## License

@@ -43,7 +43,7 @@ The project has no dependencies.
     </#list>
 </#if>
 
-II. License Summary
+III. License Summary
 
 - Apache License, Version 2.0
 - CDDL + GPLv2 with classpath exception
